@@ -118,7 +118,7 @@ __MACOSX__ is known to have compatibility issues with six module.
 pip install -r cli-requirements.pip --ignore-installed six
 ```
 
-If you are still unable to setup the required modules, you can still work with __transform-sam-local__ command integration which needs you to setup [SAM CLI](https://docs.aws.amazon.com/lambda/latest/dg/sam-cli-requirements.html)
+If you are still unable to setup the required modules, you can still work with __transform-sam-local__
 
 ## transform-local
 
@@ -141,7 +141,7 @@ CFNX Provides Rich template processing tools.
 <a name="BuiltInMacros"></a>
 ## Built in Macros
 
-Built in macros can be accessed using __$[MACRO::<name>]__ syntax.
+Built in macros can be accessed using __$[MACRO::Literal]__ syntax.
 
 _Note: Macros, Intrinsic functions and Includes can be used in any section of the template_
 
@@ -160,7 +160,7 @@ Outputs:
     Value: $[MACRO::RandomUUID]
 ```
 
-Some of the macros referencing stack attributes require providing StackName as part of parameters
+Some of the macros referencing stack attributes require providing __StackName__ as part of parameters
 
 ```YAML
 Transform:
@@ -186,13 +186,15 @@ string-to-create-macro-from-7e398284bf
 - $[MACRO::StackSHASUM] - Provides first 10 characters of SHA256 of StackId. Use this to reuse the same template to create named resources, as this value will be highly unique and immutable per stack.
 
 ```
-8d4379b9ee
+BucketName: my-bucket-$[MACRO::StackSHASUM]
+---
+BucketName: my-bucket-8d4379b9ee
 ```
 
 ##### String Macros
 
-- $[MACRO::RandomUUID]      - Returns full UUID (20f3d750-9291-4f0e-9da5-57bcbedc4aea)
-- $[MACRO::RandomShortUUID] - Returns 8 character random UUID (20f3d750)
+- $[MACRO::RandomUUID]      - Returns random UUID (20f3d750-9291-4f0e-9da5-57bcbedc4aea)
+- $[MACRO::RandomShortUUID] - Returns first 8 characters of random UUID (20f3d750)
 - $[MACRO::StackUrl]        - Returns the URL for the stack to view from console
 - $[MACRO::Region]          - Returns the region name
 - $[MACRO::StackId]         - Returns the stack id
@@ -221,4 +223,3 @@ ValueAsNumber: 1531068943
 - $[MACRO::RandomInteger]      - Returns a random integer between 1 - 32000
 - $[MACRO::RandomBigInteger]   - Returns a random integer greater than 10^9
 - $[MACRO::RandomShortInteger] - Returns a random integer between 1 - 127
-
