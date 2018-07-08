@@ -24,8 +24,7 @@ Documentation
   - [Initial](#InitialSetup)
   - [Deployments](#Deployments)
 
-<a name="FAQ"></a>
-## FAQ
+### FAQ
 ____________
 ##### Do I have to learn something very new to use this?
 ```
