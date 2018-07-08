@@ -28,7 +28,7 @@ Above command will setup:
 <a name="BasicTransformUsage"></a>
 
 ## Basic Transform Usage
-__CFNX__ is declared at top level in the template. Similar to [AWS::Serverless-2016-10-31](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html). It is not required or appropriate to declare the transform at any other level.
+__CFNX__ is declared at top level in the template. Similar to [AWS::Serverless-2016-10-31](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html). It is not required nor appropriate to declare the transform at any other level.
 
 ```YAML
 Transform: CFNX
@@ -403,7 +403,7 @@ file1 file2 file3
 
 __cmd__ also tries to convert the output to JSON object, and if it fails, returns the plain string.
 
-```YAML
+```
 FnX::Python: |
   return cmd('echo {"Key": "Value"}')
 ---
@@ -415,7 +415,7 @@ FnX::Python: |
     null --> error
 ]
 ```
-* __boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#InputStores)
+* __boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#GlobalInputStores)
 
 ```
 FnX::Python: |
