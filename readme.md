@@ -4,6 +4,7 @@
 ##### Prerequisites
 
 [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
+
 [Create an S3 bucket to upload lambda source code](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html)
 
 ##### Deployment
