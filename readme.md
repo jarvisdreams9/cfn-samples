@@ -446,7 +446,7 @@ ActiveOutages:
 
 <a name="FnXQuery"></a>
 
-- __FnX::Query__: Query is a wrapper over 'jq' library and allows to query values from the passed in objects. Data is generally provided by other intrinsic functions.
+- __FnX::Query__: Query is a wrapper over [jq](https://stedolan.github.io/jq/manual/) library and allows to query values from the passed in objects. Data is generally provided by other intrinsic functions.
 
 ```
 FnX::Query:
@@ -457,4 +457,256 @@ FnX::Query:
   Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
 ---
 UPDATE_COMPLETE
+```
+
+<a name="GlobalVariables"></a>
+## Global Variables
+
+Global variables are handy to declare values at a single place and reuse them across the template. Global variables are declared inside __ GLOBALVARS __ of __CFNXConfiguration__. You can access the global variables using __$[GLOBAL::VarName]__ or __FnX::GetGlobalVariable__.
+
+```
+Transform: CFNX
+CFNXConfiguration:
+  __GLOBALVARS__:
+    ProductionTags:
+      - Key: UpdatedAt
+        Value: $[MACRO::DateTime]
+    BucketName:
+      FnX::Python: return 'MyBucket'
+    SimpleValue: 100
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        FnX::GetGlobalVariable: BucketName         # Using FnX::GetGlobalVariable
+      Tags: $[GLOBAL::ProductionTags]              # Using $[GLOBAL::...]
+      OtherProperty: $[GLOBAL::SimpleValue]
+```
+```
+bash cfnxcmd transform-local -t docs/samples/macro/funcs_macros/global_variables.yaml
+```
+```
+Resources:
+  MyS3Bucket:
+    Properties:
+      BucketName: MyBucket
+      OtherProperty: 100
+      Tags:
+        - Key: UpdatedAt
+          Value: 2018-07-08T18:27:56.328994 UTC
+    Type: AWS::S3::Bucket
+```
+
+_NOTE: You can use macros and other utility intrinsic functions (Type, Python, Query, Operator) inside GLOBALVARS. The only exception is you cannot use $[GLOBAL::...]_
+
+<a name="GlobalInputStores"></a>
+## Global Input Stores
+
+Input Stores support download data from __S3, boto3, HTTP, Custom Python Script__ executions. Once the data is downloaded into the configured store, you can access the data by passing JQ queries to store intrinsic functions. __S3 and boto3__ also support passing __AssumeRoleConfig__ to support for cross account data or privileged data access. You pass the input store configuration as part of __CFNXConfiguration__.
+
+All Input Stores allow you to define a __StoreIdentifier__ under which you download the data. This allows you to define multiple input stores of different types.
+
+_NOTE: All input store data providers should return a valid JSON or a YAML string_
+
+- __GlobalS3InputStores__: We provide the s3://bucket/key to the __StoreIdentifier__. In this case __StoreIdentifier__ is __S3Data__. We access the output data using __FnX::GlobalS3Store__ function.
+
+```JSON
+{
+  "Tags": [
+    {
+      "Key": "Environment",
+      "Value": "Dev"
+    }
+  ]
+}
+```
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalS3InputStores:
+    Stores:
+      S3Data: s3://mybucket/bucketconfig.json
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        FnX::GlobalS3Store: ".S3Data.Tags"
+```
+```YAML
+Resources:
+  MyS3Bucket:
+    Properties:
+      Tags:
+        - Key: Environment
+          Value: Dev
+    Type: AWS::S3::Bucket
+```
+
+- __GlobalS3InputStores__ with __AssumeRoleConfig__
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalS3InputStores:
+    Stores:
+      S3Data: s3://mybucket/bucketconfig.json
+    AssumeRoleConfig:
+      RoleArn: <cross-account-or-privileged-role-arn>
+
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        FnX::GlobalS3Store: ".S3Data.Tags"
+```
+
+- __GlobalBoto3InputStores__: We provide a list of 2 elements to Boto3 Input stores, in the below format:
+
+```
+["awsservice/apiname", <optional arguments dictionary>]
+---
+["cloudformation/describe_stacks", {StackName: awscfn-extension-gcr-DONOTDELETE"}]
+```
+
+We access the output data using __FnX::GlobalBoto3Store__ function.
+
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalBoto3InputStores:
+    Stores:
+      StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE"}]
+Resources:
+  MyResource:
+    Properties:
+      Configuration:
+        FnX::GlobalBoto3Store: .StackData.Stacks[0].Outputs[] | select(.OutputKey == "CFNExtensionTransform") | .OutputValue
+```
+```YAML
+Resources:
+  MyResource:
+    Properties:
+      Configuration: ACCOUNTID::CFNX
+```
+
+- __GlobalBoto3InputStores__ with __AssumeRoleConfig__
+
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalBoto3InputStores:
+    Stores:
+      StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE"}]
+    AssumeRoleConfig:
+      RoleArn: <cross-account-or-privileged-role-arn>
+...
+```
+
+- __GlobalHTTPInputStores__: We can provide a simple url, a http method and url, a http method url and data to download the store data from and access the data using __FnX::GlobalHTTPStore__ function. The output of http stores is accessible in the below object format:
+
+```json
+{
+  "STATUS": "<http_status_code>",
+  "RESPONSE": "<json loaded object if possible else string>"
+}
+```
+
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalHTTPInputStores:
+    Stores:
+      JenkinsStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-status-provider.json
+Resources:
+  MyResource:
+    Properties:
+      Status:
+        FnX::GlobalHTTPStore: .JenkinsStore
+```
+```YAML
+Resources:
+  MyResource:
+    Properties:
+      Status:
+        RESPONSE:
+          jenkinsjobstatus: completed
+        STATUS_CODE: 200
+    Type: AWS::S3::Bucket
+```
+
+- __GlobalHTTPInputStores__ with __POST__
+```YAML
+GlobalHTTPInputStores:
+  Stores:
+    JenkinsStore:
+      - POST
+      - <url>
+```
+
+- __GlobalHTTPInputStores__ with __POST__ and __DATA__
+```YAML
+GlobalHTTPInputStores:
+  Stores:
+    JenkinsStore:
+      - POST
+      - <url>
+      - {'username': 'Bob'}
+```
+
+- __GlobalHTTPInputStores__ with __GET__ and __PARAMS__
+```YAML
+GlobalHTTPInputStores:
+  Stores:
+    JenkinsStore:
+      - GET
+      - <url>
+      - {'username': 'Bob'}   --> will be translated to query params ?username=Bob
+```
+
+- __GlobalScriptInputStores__: We can also prepare arbitrary data by running Python scripts. Store Identifiers take a single value of type string which has the custom script.
+
+The output of script stores is accessible in the below object format:
+
+```json
+{
+  "EXIT_CODE": "<exit_code>",
+  "OUTPUT": "<json loaded object if possible else string>"
+}
+```
+
+Similar to __FnX::Python__ below additional variables/clients are accessible within the code for convenience. We access the object using __FnX::GlobalScriptStore__ function.
+
+```
+boto3_session - pre baked boto3_session which is initialized with any AssumeRoleConfig passed (see second example below)
+http_client - making http requests
+cmd() - access to run shell commands
+```
+
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalScriptInputStores:
+    Stores:
+      CustomStore: |
+        return {'NumOfInstancesToCreate': 10}
+Resources:
+  MyAutoScalingGroup:
+    Properties:
+      MinSize:
+        FnX::GlobalScriptStore: .CustomStore
+```
+
+- __GlobalScriptInputStores__ with __AssumeRoleConfig__
+
+```YAML
+Transform: CFNX
+CFNXConfiguration:
+  GlobalScriptInputStores:
+    Stores:
+      CustomStore: |
+        return {'NumOfInstancesToCreate': 10}
+    AssumeRoleConfig:
+      RoleArn: <cross-account-or-privileged-role-arn>
 ```
