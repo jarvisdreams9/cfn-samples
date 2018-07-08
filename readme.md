@@ -1,7 +1,7 @@
 # Cloudformation Extensions Macro (CFNX)
 (Reserved alternate names for the project: CFNX, CFNExtensions, CFNXMacro, Generic Custom Resource, GCR, Custom Resource Helper, CRH)
 
-### Gist
+## Gist
 
 __GCR__ (or Generic Custom Resource) is not just a generic custom resource acting as a proxy. It is an extension to the already powerful AWS Cloudformation Service. It lets you __manage AWS resources missing pre defined resource types__ or __existing resources not created via cloudformation__, but also lets you __work with HTTP services__ without having to develop any code. If you like writing programs, it even lets you write pure __Python programs in the cloudformation template__ without having to worry about the whole exception handling, timeouts, retries, logging, signaling jargon. Moreover, it provides __new intrinsic functions__ which help in writing __programs__ in cloudformation tempalte which otherwise would need you to develop a new custom resource everytime. __GCR enables extended use of AWS cloudformation service__ and templates to work with scenarios where you:
 
