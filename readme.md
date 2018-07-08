@@ -19,7 +19,7 @@ __GCR__ (or Generic Custom Resource) is not just a generic custom resource actin
 
 Documentation
 ---
-- [FAQ](#FAQ)
+- [FAQ](doc:#FAQ)
 - [Setup](#Setup)
   - [Initial](#InitialSetup)
   - [Deployments](#Deployments)
