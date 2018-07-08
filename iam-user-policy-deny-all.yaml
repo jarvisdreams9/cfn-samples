@@ -4,5 +4,5 @@ PolicyDocument:
   Statement:
   - Effect: Deny
     Action:
-    - *
-    Resource: *
+    - '*'
+    Resource: '*'
