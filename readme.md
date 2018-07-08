@@ -2,13 +2,13 @@
 <a name="Setup"></a>
 ## Setup
 
-##### Prerequisites
+### Prerequisites
 
 [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
 
 [Create an S3 bucket to upload lambda source code](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html)
 
-##### Deployment
+### Deployment
 ```
 [cfnx] $ git clone <url>
 [cfnx] $ bash cfnxcmd deploy-cfnx
@@ -22,6 +22,7 @@ Above command will setup:
 
 <a name="BasicTransformUsage"></a>
 
+### Basic Transform Usage
 __CFNX__ is declared at top level in the template. Similar to [AWS::Serverless-2016-10-31](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html). It is not required or appropriate to declare the transform at any other level.
 
 ### Basic Transform Usage
