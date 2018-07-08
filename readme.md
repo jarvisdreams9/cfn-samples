@@ -5,8 +5,13 @@
 ## Prerequisites
 
 [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
-
+```
+sudo pip install awscli
+```
 [Create an S3 bucket to upload lambda source code](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html)
+```
+aws s3 mb s3://cfnx-repository-<account-id>
+```
 
 ## Deployment
 ```
@@ -223,3 +228,147 @@ ValueAsNumber: 1531068943
 - $[MACRO::RandomInteger]      - Returns a random integer between 1 - 32000
 - $[MACRO::RandomBigInteger]   - Returns a random integer greater than 10^9
 - $[MACRO::RandomShortInteger] - Returns a random integer between 1 - 127
+
+<a name="IntrinsicFunctions"></a>
+## Generic Intrinsic Functions
+
+_Note: Macros, Intrinsic Functions, Includes can be used at any level in the template_
+
+- __FnX::Type__: Convert values from one data type to another. Eg: convert JSON string to JSON Object, or convert Number values to strings vice versa or even create 'None' values etc. Supported types are: __int, float, bool, json, jsonobj, yamlobj, str, none__
+
+```
+FnX::Type:
+  Value: 100
+  Type: str
+```
+
+- __FnX::Type__: Convert values from one data type to another. Eg: convert JSON string to JSON Object, or convert Number values to strings vice versa or even create 'None' values etc. Supported types are:
+
+* Integer (int)
+```
+FnX::Type:
+  Value: '100'
+  Type: int
+---
+100
+```
+* String (str)
+```
+FnX::Type:
+  Value: 100
+  Type: str
+---
+'100'
+```
+* Float (float)
+```
+FnX::Type:
+  Type: float
+  Value: '100.1'
+---
+100.1
+```
+
+* None (none) - Cloudformation does not allow you to pass 'null' values as part of template so you can use the conversion within the template for validations etc.
+
+```
+FnX::Type:
+  Type: none
+  Value: 'none'
+---
+None
+```
+* Boolean (bool)
+```
+FnX::Type:
+  Type: bool
+  Value: 100
+---
+True
+
+---
+True - True
+False - False
+0 - False
+>0 - True
+<0 - False
+'T' | 't' | 'True' (any case) - True
+Others - False
+```
+
+* JSON String from object (json)
+
+```
+FnX::Type:
+  Type: json
+  Value:
+    Key: Value
+---
+'{"Key": "Value"}'
+```
+
+* JSON Object from string (jsonobj)
+
+```
+FnX::Type:
+  Type: json
+  Value: '{"Key": "Value"}'
+---
+{
+    "Key": "Value"
+}
+```
+
+* YAML String from object (yaml)
+
+```
+FnX::Type:
+  Type: yaml
+  Value:
+    Key: Value
+---
+"{Key: Value}\n"
+```
+
+* YAML Object from string
+```
+FnX::Type:
+  Type: yaml
+  Value: "{Key: Value}\n"
+---
+Key: Value
+```
+
+* Using CFN Flip to JSON (cfnflipjson)
+```
+FnX::Type:
+  Type: cfnflipjson
+  Value: "!Ref MyResource"
+---
+"{\n    \"Ref\": \"MyResource\"\n}"
+```
+
+* Using CFN Flip to YAML (cfnflipyaml)
+```
+FnX::Type:
+  Type: cfnflipyaml
+  Value: '{"Fn::GetAtt": ["MyResource", "Arn"]}'
+---
+"!GetAtt 'MyResource.Arn'\n"
+```
+
+* Nested Types (nesting is allowed with any intrinsic function in CFNX)
+
+```
+Value:
+  FnX::Type:
+    Value:
+      FnX::Type:
+        Value: |
+          {"Key": "Value"}
+        Type: cfnflipyaml
+    Type: yamlobj
+---
+Value:
+  Key: Value
+```
