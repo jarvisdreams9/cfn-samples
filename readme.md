@@ -391,9 +391,7 @@ FNX::Python: |
 
 __Note__: Timeout for FnX::Python code execution is __30 seconds__
 
-####### Executing commands inside FnX::Python
-
-You can use __cmd__ pre baked function to run any arbitrary linux commands. The output of the command contains 3 values: ```[exit_code, output, error]```.
+* __cmd__ is a pre baked function to run any arbitrary linux commands. The output of the command contains 3 values: ```[exit_code, output, error]```.
 
 ```YAML
 FnX::Python: |
@@ -417,7 +415,7 @@ FnX::Python: |
     null --> error
 ]
 ```
-__boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#InputStores)
+* __boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#InputStores)
 
 ```
 FnX::Python: |
@@ -431,7 +429,7 @@ FnX::Python: |
 }
 ```
 
-__http_client__ makes it easy to run http api calls (considering 30 seconds time). However, if you require larger timeouts or read data from multiple http api calls, use [Global Input Stores](#InputStores)
+* __http_client__ makes it easy to run http api calls (considering 30 seconds time). However, if you require larger timeouts or read data from multiple http api calls, use [Global Input Stores](#InputStores)
 
 Similar to __cmd__, __http_client__ also tries to convert result to JSON object before returning.
 
