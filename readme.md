@@ -183,14 +183,14 @@ Resources:
 
 - $[MACRO::SHASUM] - Provides first 10 characters of SHA256 of the string prefix
 
-```
+```YAML
 string-to-create-shasum-from-$[MACRO::SHASUM]
 ---
 string-to-create-macro-from-7e398284bf
 ```
 - $[MACRO::StackSHASUM] - Provides first 10 characters of SHA256 of StackId. Use this to reuse the same template to create named resources, as this value will be highly unique and immutable per stack.
 
-```
+```YAML
 BucketName: my-bucket-$[MACRO::StackSHASUM]
 ---
 BucketName: my-bucket-8d4379b9ee
@@ -213,12 +213,12 @@ BucketName: my-bucket-8d4379b9ee
 
 Number macros have a special property that if used with prefix or suffix it is converted to String and replaced into the value. When it has no prefix or suffix it returns value of Integer Type.
 
-```
+```YAML
 ValueAsString: 'Current Epoch Seconds: $[MACRO::EpochSeconds]'
 ---
 ValueAsString: 'Current Epoch Seconds: 1531068943'
 ```
-```
+```YAML
 ValueAsNumber: $[MACRO::EpochSeconds]
 ---
 ValueAsNumber: 1531068943
@@ -234,18 +234,11 @@ ValueAsNumber: 1531068943
 
 _Note: Macros, Intrinsic Functions, Includes can be used at any level in the template_
 
-- __FnX::Type__: Convert values from one data type to another. Eg: convert JSON string to JSON Object, or convert Number values to strings vice versa or even create 'None' values etc. Supported types are: __int, float, bool, json, jsonobj, yamlobj, str, none__
-
-```
-FnX::Type:
-  Value: 100
-  Type: str
-```
-
+<a name="FnXType"></a>
 - __FnX::Type__: Convert values from one data type to another. Eg: convert JSON string to JSON Object, or convert Number values to strings vice versa or even create 'None' values etc. Supported types are:
 
 * Integer (int)
-```
+```YAML
 FnX::Type:
   Value: '100'
   Type: int
@@ -253,7 +246,7 @@ FnX::Type:
 100
 ```
 * String (str)
-```
+```YAML
 FnX::Type:
   Value: 100
   Type: str
@@ -261,7 +254,7 @@ FnX::Type:
 '100'
 ```
 * Float (float)
-```
+```YAML
 FnX::Type:
   Type: float
   Value: '100.1'
@@ -271,7 +264,7 @@ FnX::Type:
 
 * None (none) - Cloudformation does not allow you to pass 'null' values as part of template so you can use the conversion within the template for validations etc.
 
-```
+```YAML
 FnX::Type:
   Type: none
   Value: 'none'
@@ -279,7 +272,7 @@ FnX::Type:
 None
 ```
 * Boolean (bool)
-```
+```YAML
 FnX::Type:
   Type: bool
   Value: 100
@@ -298,7 +291,7 @@ Others - False
 
 * JSON String from object (json)
 
-```
+```YAML
 FnX::Type:
   Type: json
   Value:
@@ -309,7 +302,7 @@ FnX::Type:
 
 * JSON Object from string (jsonobj)
 
-```
+```YAML
 FnX::Type:
   Type: json
   Value: '{"Key": "Value"}'
@@ -321,7 +314,7 @@ FnX::Type:
 
 * YAML String from object (yaml)
 
-```
+```YAML
 FnX::Type:
   Type: yaml
   Value:
@@ -331,7 +324,7 @@ FnX::Type:
 ```
 
 * YAML Object from string
-```
+```YAML
 FnX::Type:
   Type: yaml
   Value: "{Key: Value}\n"
@@ -340,7 +333,7 @@ Key: Value
 ```
 
 * Using CFN Flip to JSON (cfnflipjson)
-```
+```YAML
 FnX::Type:
   Type: cfnflipjson
   Value: "!Ref MyResource"
@@ -349,7 +342,7 @@ FnX::Type:
 ```
 
 * Using CFN Flip to YAML (cfnflipyaml)
-```
+```YAML
 FnX::Type:
   Type: cfnflipyaml
   Value: '{"Fn::GetAtt": ["MyResource", "Arn"]}'
@@ -359,7 +352,7 @@ FnX::Type:
 
 * Nested Types (nesting is allowed with any intrinsic function in CFNX)
 
-```
+```YAML
 Value:
   FnX::Type:
     Value:
@@ -371,4 +364,99 @@ Value:
 ---
 Value:
   Key: Value
+```
+
+<a name="FnXOperator"></a>
+- __FnX::Operator__: Lets you make any valid operation between two operands. Apart from the operations supported by [operator](https://docs.python.org/2/library/operator.html) module CFNX provides support for __'iregex', 'ieq', 'ine', 'imemberof', 'icontains', 'memberof', 'regex'__.
+
+_Note: Please note that only operations that take 2 operands are supported. For other advanced use cases see [FnX::Python](#FnXPython)_
+
+```YAML
+FnX::Operator: [Operand1]
+FnX::Operator: ['AWS', 'eq', 'AWS']
+---
+True
+```
+
+<a name="FnXPython"></a>
+
+- __FnX::Python__: Supports running arbitrary python code which returns a value as a result of the intrinsic function. Accepts any valid python program with a constraint that the last statement of the program should return a value. If you wish you return None, you still have to use 'return None'.
+
+```YAML
+FNX::Python: |
+  return range(1, 10)
+---
+[1,2,3,4,5,6,7,8,9]
+```
+
+__Note__: Timeout for FnX::Python code execution is __30 seconds__
+
+####### Executing commands inside FnX::Python
+
+You can use __cmd__ pre baked function to run any arbitrary linux commands. The output of the command contains 3 values: ```[exit_code, output, error]```.
+
+```YAML
+FnX::Python: |
+  exit_code, out, err = cmd("ls")
+  return out
+---
+file1 file2 file3
+```
+
+__cmd__ also tries to convert the output to JSON object, and if it fails, returns the plain string.
+
+```YAML
+FnX::Python: |
+  return cmd('echo {"Key": "Value"}')
+---
+[
+    0,   --> exit code
+    {
+        "Key": "Value"
+    },
+    null --> error
+]
+```
+__boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#InputStores)
+
+```
+FnX::Python: |
+  result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
+  return result['StackResources'][0]
+---
+{
+    "LogicalResourceId": "CFNExtensionLambdaFunction",
+    "ResourceType": "AWS::Lambda::Function",
+    ... truncated ...
+}
+```
+
+__http_client__ makes it easy to run http api calls (considering 30 seconds time). However, if you require larger timeouts or read data from multiple http api calls, use [Global Input Stores](#InputStores)
+
+Similar to __cmd__, __http_client__ also tries to convert result to JSON object before returning.
+
+```
+ActiveOutages:
+  FnX::Python: |
+    return http_client.get_result('GET', 'https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/active_outages')
+---
+ActiveOutages:
+  RESPONSE:
+    active_outages: 0
+  STATUS_CODE: 200
+```
+
+<a name="FnXQuery"></a>
+
+- __FnX::Query__: Query is a wrapper over 'jq' library and allows to query values from the passed in objects. Data is generally provided by other intrinsic functions.
+
+```
+FnX::Query:
+  Object:
+    FnX::Python: |
+      result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
+      return result['StackResources']
+  Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
+---
+UPDATE_COMPLETE
 ```
