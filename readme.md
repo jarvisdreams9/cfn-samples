@@ -1,5 +1,5 @@
 
-<a name="Setup">
+<a name="Setup"></>
 ## Setup
 
 ##### Prerequisites
@@ -20,8 +20,10 @@ Above command will setup:
 - Macro named __CFNX__
 - Export named __CFNXGenericCustomResource__ which points to the lambda function (gcr)
 
-<a name="BasicTransformUsage">
+<a name="BasicTransformUsage"></>
+
 __CFNX__ is declared at top level in the template. Similar to [AWS::Serverless-2016-10-31](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html). It is not required or appropriate to declare the transform at any other level.
+
 ### Basic Transform Usage
 ```YAML
 Transform: CFNX
