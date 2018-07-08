@@ -1,6 +1,6 @@
-<a name="Setup">
 
-###Setup
+<a name="Setup">
+### Setup
 
 ##### Prerequisites
 
@@ -27,7 +27,7 @@ __CFNX__ is declared at top level in the template. Similar to [AWS::Serverless-2
 Transform: CFNX
 ```
 
-[docs/samples/macros/setup/basic.yaml](#docs/samples/macros/setup/basic.yaml)
+[docs/samples/macros/setup/basic.yaml](#/docs/samples/macros/setup/basic.yaml)
 
 ```YAML
 Transform: [CFNX]
