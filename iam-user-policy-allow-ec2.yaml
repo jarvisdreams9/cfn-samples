@@ -1,8 +1,8 @@
-PolicyName: denycompleteaccess
+PolicyName: allowec2describe
 PolicyDocument:
   Version: '2012-10-17'
   Statement:
-  - Effect: Allow
+  - Effect: Deny
     Action:
-    - ec2:Describe*
-    Resource: *
+    - 'ec2:Describe*'
+    Resource: '*'
