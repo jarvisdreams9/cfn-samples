@@ -1,0 +1,4 @@
+- Action:
+    - '*'
+  Effect: Allow
+  Resource: '*'
