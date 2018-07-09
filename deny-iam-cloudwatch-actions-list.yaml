@@ -1,0 +1,8 @@
+- Action:
+    - 'iam:*'
+  Effect: Deny
+  Resource: '*'
+- Action:
+    - 'logs:*'
+  Effect: Deny
+  Resource: '*'
