@@ -8,3 +8,7 @@
     - 'redshift:*'
   Effect: Deny
   Resource: '*'
+- Action:
+    - 'iam:*'
+  Effect: Deny
+  Resource: '*'
