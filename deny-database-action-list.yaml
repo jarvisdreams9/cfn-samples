@@ -1,0 +1,10 @@
+- Action:
+    - 'rds:*'
+    - 'elasticsearch:*'
+  Effect: Deny
+  Resource: '*'
+- Action:
+    - 'dynamodb:*'
+    - 'redshift:*'
+  Effect: Deny
+  Resource: '*'
