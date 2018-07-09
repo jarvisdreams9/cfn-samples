@@ -1,0 +1,4 @@
+- Key: Logging
+  Value: Enabled
+- Key: cost-allocation
+  Value: quotas
