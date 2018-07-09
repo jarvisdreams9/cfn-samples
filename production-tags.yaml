@@ -1,0 +1,4 @@
+- Key: Environment
+  Value: Production
+- Key: Logging
+  Value: Enabled
