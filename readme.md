@@ -1,712 +1,366 @@
+<a name="References"></a>
+# References
 
-<a name="Setup"></a>
-# Setup
+<a name="WorkingWithApis"></a>
+## How to use APIs in CFNX
 
-## Prerequisites
+__CFNX__ provides support for 3 types of apis and provides the output in a generic way to make it feel seamless to work with different integration types.
 
-[aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html)
-```
-sudo pip install awscli
-```
-[Create an S3 bucket to upload lambda source code](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html)
-```
-aws s3 mb s3://cfnx-repository-<account-id>
-```
+1) [boto3](#Boto3ApiUsage) (Default)
+2) [HTTP](#HTTPApiUsage)
+3) [ScriptExecutor](#ScriptExecutorApiUsage) (Python Scripts)
 
-## Deployment
-```
-[cfnx] $ git clone <url>
-[cfnx] $ bash cfnxcmd deploy-cfnx
-S3 bucket [None]: <provide bucket name>
-...
-```
-Above command will setup:
-- Cloudformation Stack with name __awscfn-extension-gcr-DONOTDELETE__
-- Macro named __CFNX__
-- Export named __CFNXGenericCustomResource__ which points to the lambda function (gcr)
+Please read through the specific api type you like to use with above links.
 
-<a name="BasicTransformUsage"></a>
+Apis are use in CFNX in two different contexts:
 
-## Basic Transform Usage
-__CFNX__ is declared at top level in the template. Similar to [AWS::Serverless-2016-10-31](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/transform-aws-serverless.html). It is not required nor appropriate to declare the transform at any other level.
+1) Making Simple Api calls in __CFNXPreValidations__, __CFNXPostValidations__, __CFNXDataProvider__, __CFNXDataExporter__. In this context you can query the output of the api using:
 
-```YAML
-Transform: CFNX
-```
-
-[docs/samples/macros/setup/basic.yaml](/docs/samples/macros/setup/basic.yaml)
-
-```YAML
-Transform: [CFNX]
-```
-
-[docs/samples/macros/setup/basic_list_transform.yaml](/docs/samples/macros/setup/basic_list_transform.yaml)
-
-* For certain features we require stack name to be passed as follows
-
-```YAML
-Transform:
-  - Name: CFNX
-    Parameters:
-      StackName: !Sub ${AWS::StackName}
-```
-
-[docs/samples/macros/setup/basic_transform_with_parameters.yaml](/docs/samples/macros/setup/basic_transform_with_parameters.yaml)
-
-* Passing configuration to CFNX
-
-```YAML
-Transform:
-  - Name: CFNX
-    Parameters:
-      StackName: !Sub ${AWS::StackName}
-CFNXConfiguration:
-  __GLOBALVARS__:
-    ProductionTags:
-      - Key: Environment
-        Value: Production
-Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags: $[GLOBAL::ProductionTags]
-```
-
-[docs/samples/macros/setup/basic_transform_cfnxconfiguration.yaml](/docs/samples/macros/setup/basic_transform_cfnxconfiguration.yaml)
-
-* Using with other Transforms
-```YAML
-Transform:
-  # Call CFNX initially
-  - Name: CFNX
-    Parameters:
-      StackName: !Sub ${AWS::StackName}
-  # Pass the transformed template to SAM
-  - Name: AWS::Serverless-2016-10-31
-  # Post process the template
-  - Name: CFNX
-    Parameters:
-      StackName: !Sub ${AWS::StackName}
-      FinalTemplateOverride: |
-        - LogicalResourceIds: ['.+']
-          Apply:
-            DeletionPolicy: Retain
-```
-
-[docs/samples/macros/setup/multiple_transforms.yaml](/docs/samples/macros/setup/multiple_transforms.yaml)
-
-<a name="CFNX"></a>
-# CFNX Transform
-
-<a name="CLISetupUsage"></a>
-## CLI Setup and Usage
-
-__CFNX__ provides a CLI which makes it easy to test transform templates locally without having to deploy them to cloudformation or create change set every time.
-
-It is recommended to use virtualenv to avoid version compatibility issues
-
-```
-$ sudo pip install virtualenvwrapper
-$ source /usr/local/bin/virtualenvwrapper.sh
-$ mkvirtualenv cfnx
-```
-
-Once installed setup CLI requirements as below:
-
-```
-(cfnx) $ pip install -r cli-requirements.pip
-```
-
-__MACOSX__ is known to have compatibility issues with six module.
-
-```
-pip install -r cli-requirements.pip --ignore-installed six
-```
-
-If you are still unable to setup the required modules, you can still work with __transform-sam-local__
-
-## transform-local
-
-```
-bash cfnxcmd transform-local -t docs/samples/macro/cli-usage/basic.yaml
-```
-
-## transform-local-sam
-
-Prerequisite: [Docker](https://docs.docker.com/) needs to be running locally
-
-```
-bash cfnxcmd transform-local-sam -t docs/samples/macro/cli-usage/basic.yaml
-```
-
-<a name="TemplateProcessing"></a>
-# Template Processing
-CFNX Provides Rich template processing tools.
-
-<a name="BuiltInMacros"></a>
-## Built in Macros
-
-Built in macros can be accessed using __$[MACRO::Literal]__ syntax.
-
-_Note: Macros, Intrinsic functions and Includes can be used in any section of the template_
-
-```YAML
-Transform: CFNX
-Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        - Key: LastUpdatedAt
-          Value: $[MACRO::DateTime]
-
-Outputs:
-  RandomUUID:
-    Value: $[MACRO::RandomUUID]
-```
-
-Some of the macros referencing stack attributes require providing __StackName__ as part of parameters
-
-```YAML
-Transform:
-  - Name: CFNX
-    Parameters:
-      StackName: !Sub ${AWS::StackName}
-Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: my-bucket-$[MACRO::StackSHASUM]
-```
-
-##### Special Macros
-
-- $[MACRO::SHASUM] - Provides first 10 characters of SHA256 of the string prefix
-
-```YAML
-string-to-create-shasum-from-$[MACRO::SHASUM]
----
-string-to-create-macro-from-7e398284bf
-```
-- $[MACRO::StackSHASUM] - Provides first 10 characters of SHA256 of StackId. Use this to reuse the same template to create named resources, as this value will be highly unique and immutable per stack.
-
-```YAML
-BucketName: my-bucket-$[MACRO::StackSHASUM]
----
-BucketName: my-bucket-8d4379b9ee
-```
-
-##### String Macros
-
-- $[MACRO::RandomUUID]      - Returns random UUID (20f3d750-9291-4f0e-9da5-57bcbedc4aea)
-- $[MACRO::RandomShortUUID] - Returns first 8 characters of random UUID (20f3d750)
-- $[MACRO::StackUrl]        - Returns the URL for the stack to view from console
-- $[MACRO::Region]          - Returns the region name
-- $[MACRO::StackId]         - Returns the stack id
-- $[MACRO::StackName]       - Returns the Name of the stack
-- $[MACRO::AccountId]       - Returns the Account ID
-- $[MACRO::RequestId]       - Returns the RequestId. Use this if you need unique value per stack deployment
-- $[MACRO::DateTime]        - Current UTC time in string ISO format
-- $[MACRO::StackStatus]     - Provides stack status. More appropriate usage of this would be while configuring runtime [Success](#CFNXSuccessActions) [Failure](#CFNXFailureActions) actions per resource
-
-##### Number Macros
-
-Number macros have a special property that if used with prefix or suffix it is converted to String and replaced into the value. When it has no prefix or suffix it returns value of Integer Type.
-
-```YAML
-ValueAsString: 'Current Epoch Seconds: $[MACRO::EpochSeconds]'
----
-ValueAsString: 'Current Epoch Seconds: 1531068943'
-```
-```YAML
-ValueAsNumber: $[MACRO::EpochSeconds]
----
-ValueAsNumber: 1531068943
-```
-
-- $[MACRO::EpochSeconds]       - Returns current epoch seconds
-- $[MACRO::RandomInteger]      - Returns a random integer between 1 - 32000
-- $[MACRO::RandomBigInteger]   - Returns a random integer greater than 10^9
-- $[MACRO::RandomShortInteger] - Returns a random integer between 1 - 127
-
-<a name="IntrinsicFunctions"></a>
-## Generic Intrinsic Functions
-
-_Note: Macros, Intrinsic Functions, Includes can be used at any level in the template_
-
-<a name="FnXType"></a>
-- __FnX::Type__: Convert values from one data type to another. Eg: convert JSON string to JSON Object, or convert Number values to strings vice versa or even create 'None' values etc. Supported types are:
-
-* Integer (int)
-```YAML
-FnX::Type:
-  Value: '100'
-  Type: int
----
-100
-```
-* String (str)
-```YAML
-FnX::Type:
-  Value: 100
-  Type: str
----
-'100'
-```
-* Float (float)
-```YAML
-FnX::Type:
-  Type: float
-  Value: '100.1'
----
-100.1
-```
-
-* None (none) - Cloudformation does not allow you to pass 'null' values as part of template so you can use the conversion within the template for validations etc.
-
-```YAML
-FnX::Type:
-  Type: none
-  Value: 'none'
----
-None
-```
-* Boolean (bool)
-```YAML
-FnX::Type:
-  Type: bool
-  Value: 100
----
-True
-
----
-True - True
-False - False
-0 - False
->0 - True
-<0 - False
-'T' | 't' | 'True' (any case) - True
-Others - False
-```
-
-* JSON String from object (json)
-
-```YAML
-FnX::Type:
-  Type: json
-  Value:
-    Key: Value
----
-'{"Key": "Value"}'
-```
-
-* JSON Object from string (jsonobj)
-
-```YAML
-FnX::Type:
-  Type: json
-  Value: '{"Key": "Value"}'
----
-{
-    "Key": "Value"
-}
-```
-
-* YAML String from object (yaml)
-
-```YAML
-FnX::Type:
-  Type: yaml
-  Value:
-    Key: Value
----
-"{Key: Value}\n"
-```
-
-* YAML Object from string
-```YAML
-FnX::Type:
-  Type: yaml
-  Value: "{Key: Value}\n"
----
-Key: Value
-```
-
-* Using CFN Flip to JSON (cfnflipjson)
-```YAML
-FnX::Type:
-  Type: cfnflipjson
-  Value: "!Ref MyResource"
----
-"{\n    \"Ref\": \"MyResource\"\n}"
-```
-
-* Using CFN Flip to YAML (cfnflipyaml)
-```YAML
-FnX::Type:
-  Type: cfnflipyaml
-  Value: '{"Fn::GetAtt": ["MyResource", "Arn"]}'
----
-"!GetAtt 'MyResource.Arn'\n"
-```
-
-* Nested Types (nesting is allowed with any intrinsic function in CFNX)
-
+- __FnX::Resp__ intrinsic function
 ```YAML
 Value:
-  FnX::Type:
-    Value:
-      FnX::Type:
-        Value: |
-          {"Key": "Value"}
-        Type: cfnflipyaml
-    Type: yamlobj
----
+  FnX::Resp: ".ResponseMetadata.HTTPStatusCode" # For boto3
+```
+- __Resp::__ string prefix
+```YAML
+Value: 'Resp::.ResponseMetadata.HTTPStatusCode'
+```
+
+2) Polling context where apis are made every PollDelay seconds in __CFNXWaitOn__, __CFNXStabilizeOn__.
+In this context we are waiting for a particular state to be achieved. You can query the final output of the api using:
+
+- __FnX::WaitResp__ intrinsic function
+```YAML
 Value:
-  Key: Value
+  FnX::WaitResp: ".ResponseMetadata.HTTPStatusCode" # For boto3
+```
+- __WaitResp::__ string prefix
+```YAML
+Value: 'WaitResp::.ResponseMetadata.HTTPStatusCode'
 ```
 
-<a name="FnXOperator"></a>
-- __FnX::Operator__: Lets you make any valid operation between two operands. Apart from the operations supported by [operator](https://docs.python.org/2/library/operator.html) module CFNX provides support for __'iregex', 'ieq', 'ine', 'imemberof', 'icontains', 'memberof', 'regex'__.
+You can use the above methods to query values for properties inside config objects like __SuccessOn__, __FailOn__, __Outputs__, __S3Outputs__.
 
-_Note: Please note that only operations that take 2 operands are supported. For other advanced use cases see [FnX::Python](#FnXPython)_
+<a name="Boto3ApiUsage"></a>
+### Boto3
+___
+
+[Boto3](http://boto3.readthedocs.io/en/latest/reference/services/) is a python library which provides apis to work with different api services like create s3 buckets, create ec2 instances, read data from s3, send SMS / SNS etc. Every api has a __ServiceName__ and __ApiName__. For example to create an s3 bucket use __ServiceName: s3__ and __ApiName: create_bucket__.
+
+To work with boto3 apis in CFNX, we provide one argument named __Api__ which is of format __ServiceName/ApiName__. So the create bucket operation is specified as __Api: s3/create_bucket__.
+
+boto3 apis also support passing __Arguments__ to the apis. With CFNX we pass those using __Arguments__ property. Eg:
 
 ```YAML
-FnX::Operator: [Operand1]
-FnX::Operator: ['AWS', 'eq', 'AWS']
----
-True
+Api: s3/create_bucket
+Arguments:
+  Bucket: MyS3Bucket
 ```
 
-<a name="FnXPython"></a>
-
-- __FnX::Python__: Supports running arbitrary python code which returns a value as a result of the intrinsic function. Accepts any valid python program with a constraint that the last statement of the program should return a value. If you wish you return None, you still have to use 'return None'.
-
-```YAML
-FNX::Python: |
-  return range(1, 10)
----
-[1,2,3,4,5,6,7,8,9]
-```
-
-__Note__: Timeout for FnX::Python code execution is __30 seconds__
-
-* __cmd__ is a pre baked function to run any arbitrary linux commands. The output of the command contains 3 values: ```[exit_code, output, error]```.
-
-```YAML
-FnX::Python: |
-  exit_code, out, err = cmd("ls")
-  return out
----
-file1 file2 file3
-```
-
-__cmd__ also tries to convert the output to JSON object, and if it fails, returns the plain string.
-
-```
-FnX::Python: |
-  return cmd('echo {"Key": "Value"}')
----
-[
-    0,   --> exit code
-    {
-        "Key": "Value"
-    },
-    null --> error
-]
-```
-* __boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#GlobalInputStores)
-
-```
-FnX::Python: |
-  result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
-  return result['StackResources'][0]
----
-{
-    "LogicalResourceId": "CFNExtensionLambdaFunction",
-    "ResourceType": "AWS::Lambda::Function",
-    ... truncated ...
-}
-```
-
-* __http_client__ makes it easy to run http api calls (considering 30 seconds time). However, if you require larger timeouts or read data from multiple http api calls, use [Global Input Stores](#InputStores)
-
-Similar to __cmd__, __http_client__ also tries to convert result to JSON object before returning.
-
-```
-ActiveOutages:
-  FnX::Python: |
-    return http_client.get_result('GET', 'https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/active_outages')
----
-ActiveOutages:
-  RESPONSE:
-    active_outages: 0
-  STATUS_CODE: 200
-```
-
-<a name="FnXQuery"></a>
-
-- __FnX::Query__: Query is a wrapper over [jq](https://stedolan.github.io/jq/manual/) library and allows to query values from the passed in objects. Data is generally provided by other intrinsic functions.
-
-```
-FnX::Query:
-  Object:
-    FnX::Python: |
-      result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
-      return result['StackResources']
-  Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
----
-UPDATE_COMPLETE
-```
-
-<a name="GlobalVariables"></a>
-## Global Variables
-
-Global variables are handy to declare values at a single place and reuse them across the template. Global variables are declared inside __ GLOBALVARS __ of __CFNXConfiguration__. You can access the global variables using __$[GLOBAL::VarName]__ or __FnX::GetGlobalVariable__.
-
-```
-Transform: CFNX
-CFNXConfiguration:
-  __GLOBALVARS__:
-    ProductionTags:
-      - Key: UpdatedAt
-        Value: $[MACRO::DateTime]
-    BucketName:
-      FnX::Python: return 'MyBucket'
-    SimpleValue: 100
-Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName:
-        FnX::GetGlobalVariable: BucketName         # Using FnX::GetGlobalVariable
-      Tags: $[GLOBAL::ProductionTags]              # Using $[GLOBAL::...]
-      OtherProperty: $[GLOBAL::SimpleValue]
-```
-```
-bash cfnxcmd transform-local -t docs/samples/macro/funcs_macros/global_variables.yaml
-```
-```
-Resources:
-  MyS3Bucket:
-    Properties:
-      BucketName: MyBucket
-      OtherProperty: 100
-      Tags:
-        - Key: UpdatedAt
-          Value: 2018-07-08T18:27:56.328994 UTC
-    Type: AWS::S3::Bucket
-```
-
-_NOTE: You can use macros and other utility intrinsic functions (Type, Python, Query, Operator) inside GLOBALVARS. The only exception is you cannot use $[GLOBAL::...]_
-
-<a name="GlobalInputStores"></a>
-## Global Input Stores
-
-Input Stores support download data from __S3, boto3, HTTP, Custom Python Script__ executions. Once the data is downloaded into the configured store, you can access the data by passing JQ queries to store intrinsic functions. __S3 and boto3__ also support passing __AssumeRoleConfig__ to support for cross account data or privileged data access. You pass the input store configuration as part of __CFNXConfiguration__.
-
-All Input Stores allow you to define a __StoreIdentifier__ under which you download the data. This allows you to define multiple input stores of different types.
-
-_NOTE: All input store data providers should return a valid JSON or a YAML string_
-
-- __GlobalS3InputStores__: We provide the s3://bucket/key to the __StoreIdentifier__. In this case __StoreIdentifier__ is __S3Data__. We access the output data using __FnX::GlobalS3Store__ function.
+**Reading response from Boto3 apis**
+__CFNX__ supports using [JQ](#UsingJQ) queries on the response of boto3. The output from the API is provided as it is for queries to work with. Eg: create_bucket will provide a response with not just the location of the new bucket but also some response metadata:
 
 ```JSON
 {
-  "Tags": [
-    {
-      "Key": "Environment",
-      "Value": "Dev"
-    }
-  ]
+    "ResponseMetadata": {
+        "HTTPHeaders": {
+            "content-length": "123",
+            "date": "Sun, 08 Jul 2018 17:54:27 GMT",
+            "x-amzn-requestid": "f4f8b71d-82d7-11e8-8ff6-93d137616026"
+        },
+        "HTTPStatusCode": 200,
+        "RequestId": "f4f8b71d-82d7-11e8-8ff6-93d137616026",
+        "RetryAttempts": 0
+    },
+    "Location": "MyS3Bucket"
 }
 ```
-```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalS3InputStores:
-    Stores:
-      S3Data: s3://mybucket/bucketconfig.json
-Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        FnX::GlobalS3Store: ".S3Data.Tags"
-```
-```YAML
-Resources:
-  MyS3Bucket:
-    Properties:
-      Tags:
-        - Key: Environment
-          Value: Dev
-    Type: AWS::S3::Bucket
-```
 
-- __GlobalS3InputStores__ with __AssumeRoleConfig__
-```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalS3InputStores:
-    Stores:
-      S3Data: s3://mybucket/bucketconfig.json
-    AssumeRoleConfig:
-      RoleArn: <cross-account-or-privileged-role-arn>
-
-Resources:
-  MyS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      Tags:
-        FnX::GlobalS3Store: ".S3Data.Tags"
+We can now make some queries on this output as follows:
 ```
-
-- __GlobalBoto3InputStores__: We provide a list of 2 elements to Boto3 Input stores, in the below format:
-
-```
-["awsservice/apiname", <optional arguments dictionary>]
+.ResponseMetadata.HTTPStatusCode
 ---
-["cloudformation/describe_stacks", {StackName: awscfn-extension-gcr-DONOTDELETE"}]
+200
+```
+```
+.Location
+---
+MyS3Bucket
 ```
 
-We access the output data using __FnX::GlobalBoto3Store__ function.
+However, when you reference an invalid property you get a __None__ response which will throw an exception. See [Working with None in JQ](#JQUnsafe)
 
-```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalBoto3InputStores:
-    Stores:
-      StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE"}]
-Resources:
-  MyResource:
-    Properties:
-      Configuration:
-        FnX::GlobalBoto3Store: .StackData.Stacks[0].Outputs[] | select(.OutputKey == "CFNExtensionTransform") | .OutputValue
 ```
-```YAML
-Resources:
-  MyResource:
-    Properties:
-      Configuration: ACCOUNTID::CFNX
+.InvalidProperty
+---
+None
 ```
 
-- __GlobalBoto3InputStores__ with __AssumeRoleConfig__
+**Advanced Boto3 Config**
+You can also configure boto3 to use different connection settings like __region__, __timeout__, __retries__ etc. For full list see [Boto3 Config Reference](https://botocore.readthedocs.io/en/latest/reference/config.html)
 
 ```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalBoto3InputStores:
-    Stores:
-      StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE"}]
-    AssumeRoleConfig:
-      RoleArn: <cross-account-or-privileged-role-arn>
+Boto3ConnectionConfig:
+  region_name: us-east-1
+  connect_timeout: 30      # Default: 30
+  read_timeout: 60         # Default: 60
+  retries:
+    max_attempts: 0        # Default: 0
+```
+
+You can configure __AssumeRoleConfig__ for privileged access or cross account access using below syntax:
+
+```YAML
+AssumeRoleConfig:
+  RoleArn: <arn>
+```
+
+Complete Config Reference:
+```YAML
+ServiceType: boto3       # ---> Optional for boto3 as it is the default
+Api: s3/create_bucket
+Arguments:
+  BucketName: MyBucket
+Boto3ConnectionConfig:
+  region_name: us-east-1
+  connect_timeout: 30      # Default: 30
+  read_timeout: 60         # Default: 60
+  retries:
+    max_attempts: 0        # Default: 0
+AssumeRoleConfig:
+  RoleArn: <arn>
+```
+
+<a name="HTTPApiUsage"></a>
+### HTTP
+___
+
+CFNX makes working with HTTP similar to Boto3, with a simple addition that you need to explicitly provide __ServiceType: HTTP__ in the configuration. Apart from this it accepts:
+
+- __Api__: which should be the HTTP URL to work with.
+- __Method__: (Default: GET) HTTP method to work with.
+- __Arguments__: If method is _['GET', 'HEAD', 'OPTIONS']_ it is converted to query parameters otherwise (eg: POST) it is converted to JSON and passed as part of __data__
+
+```YAML
+ServiceType: HTTP
+Api: https://jsonplaceholder.typicode.com/posts
+Method: GET
+Arguments:
+  userId: 1
+```
+
+```YAML
+ServiceType: POST
+Api: https://jsonplaceholder.typicode.com/posts
+Method: GET
+Arguments:
+  title: My New Post
+  body: useful blog
+```
+
+**Reading response from HTTP apis**
+CFNX automatically tries to convert the response into a JSON object if response is a valid JSON string otherwise, the response is provided as a string. Response is available inside __RESPONSE__ and status code of the response is available in __STATUS_CODE__.
+
+For example making a GET request to __https://jsonplaceholder.typicode.com/posts?userId=1__
+
+```JSON
+{
+    "STATUS_CODE": 200,
+    "RESPONSE": [
+      {
+        "userId": 1,
+        "id": 1,
+        "title": "My First Post",
+        "body": "useful content"
+      }
+    ]
+}
+```
+
+Once we have the JSON response, we can make [JQ](#UsingJQ) queries.
+
+```YAML
+.STATUS_CODE
 ...
-```
-
-- __GlobalHTTPInputStores__: We can provide a simple url, a http method and url, a http method url and data to download the store data from and access the data using __FnX::GlobalHTTPStore__ function. The output of http stores is accessible in the below object format:
-
-```json
-{
-  "STATUS": "<http_status_code>",
-  "RESPONSE": "<json loaded object if possible else string>"
-}
+200
 ```
 
 ```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalHTTPInputStores:
-    Stores:
-      JenkinsStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-status-provider.json
-Resources:
-  MyResource:
-    Properties:
-      Status:
-        FnX::GlobalHTTPStore: .JenkinsStore
-```
-```YAML
-Resources:
-  MyResource:
-    Properties:
-      Status:
-        RESPONSE:
-          jenkinsjobstatus: completed
-        STATUS_CODE: 200
-    Type: AWS::S3::Bucket
+.RESPONSE[0].title
+...
+My First Post
 ```
 
-- __GlobalHTTPInputStores__ with __POST__
-```YAML
-GlobalHTTPInputStores:
-  Stores:
-    JenkinsStore:
-      - POST
-      - <url>
-```
-
-- __GlobalHTTPInputStores__ with __POST__ and __DATA__
-```YAML
-GlobalHTTPInputStores:
-  Stores:
-    JenkinsStore:
-      - POST
-      - <url>
-      - {'username': 'Bob'}
-```
-
-- __GlobalHTTPInputStores__ with __GET__ and __PARAMS__
-```YAML
-GlobalHTTPInputStores:
-  Stores:
-    JenkinsStore:
-      - GET
-      - <url>
-      - {'username': 'Bob'}   --> will be translated to query params ?username=Bob
-```
-
-- __GlobalScriptInputStores__: We can also prepare arbitrary data by running Python scripts. Store Identifiers take a single value of type string which has the custom script.
-
-The output of script stores is accessible in the below object format:
-
-```json
-{
-  "EXIT_CODE": "<exit_code>",
-  "OUTPUT": "<json loaded object if possible else string>"
-}
-```
-
-Similar to __FnX::Python__ below additional variables/clients are accessible within the code for convenience. We access the object using __FnX::GlobalScriptStore__ function.
-
-```
-boto3_session - pre baked boto3_session which is initialized with any AssumeRoleConfig passed (see second example below)
-http_client - making http requests
-cmd() - access to run shell commands
-```
+**Advanced HTTP Config**
+Similar to boto3 you can configure connection settings with below object:
 
 ```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalScriptInputStores:
-    Stores:
-      CustomStore: |
-        return {'NumOfInstancesToCreate': 10}
-Resources:
-  MyAutoScalingGroup:
-    Properties:
-      MinSize:
-        FnX::GlobalScriptStore: .CustomStore
+HTTPConnectionConfig:
+  retries: 0             # Default 0
+  timeout: 60            # Default 60
 ```
 
-- __GlobalScriptInputStores__ with __AssumeRoleConfig__
+Complete Config Reference:
+```YAML
+ServiceType: HTTP
+Api: http://myservice.com
+Method: POST
+Arguments:
+  Username: bob
+HTTPConnectionConfig:
+  retries: 0             # Default 0
+  timeout: 60            # Default 60
+```
+
+<a name="ScriptExecutorApiUsage"></a>
+### ScriptExecutor
+___
+
+CFNX makes it easy to work with ScriptExecutor by making it compatible with API services. We use __ServiceType__ as __ScriptExecutor__ for scripts. We provide the code to execute in ScriptExecutor directly into the __Api__ property. Along with this we can also pass any arguments that we would like to access within the script using __Arguments__
 
 ```YAML
-Transform: CFNX
-CFNXConfiguration:
-  GlobalScriptInputStores:
-    Stores:
-      CustomStore: |
-        return {'NumOfInstancesToCreate': 10}
-    AssumeRoleConfig:
-      RoleArn: <cross-account-or-privileged-role-arn>
+ServiceType: ScriptExecutor
+Api: |
+  return args['UserName']
+Arguments:
+  UserName: bob
+```
+
+We can also add __ScriptExecutorConnectionConfig__ to configure retries and timeouts:
+
+```YAML
+ScriptExecutorConnectionConfig:
+  retries: 0                              # Default 0
+  timeout: 60                             # Default 60
+```
+
+When working with boto3/http you can also pass __Boto3ConnectionConfig__ and __AssumeRoleConfig__ and __HTTPConnectionConfig__ which are pre-baked into the executor shell for easy access.
+
+Along with this you have access to pre-backed functions and sessions as below:
+
+__args__: access arguments passed to Api using args['ArgName']
+__cmd__: Run Shell commands using this function. Output of this function provides 3 values
+```
+exit_code, output, error = cmd("ls")
+```
+__event__: access the 'event' object passed to lambda
+__request__: access CFNX/GCR request object for advanced context information like start time, etc.
+__properties__: for CFNX (transforms) this is set to __CFNXConfiguration__. In GCR this is set to __ResourceProperties__.
+__boto3_session__: pre baked boto3 session. If __AssumeRoleConfig__ is passed it initializes the session with role credentials, else uses default lambda execution role.
+__boto3_config__: pre baked config object having __Boto3ConnectionConfig__
+__http_client__: provides a simple interface to work with http requests.
+```
+http_client.get_result(method, url, retries=0, timeout=60, data={}, headers={})
+```
+__http_config__: pre baked config object having __HTTPConnectionConfig__ Eg: {'retries': 0, 'timeout': 60}
+__log_client__: helps in logging 'info', 'error', 'debug', 'exception' messages.
+```
+log_client.info("Starting execution")
+log_client.exception("Raise exception and fail the request")
+```
+__dry_run__: helps to determine if request is being run in DryRun mode. Used in CLI.
+__utils__: multiple utility functions including is_string(), is_boolean() etc. For complete list see helpers/utils.py in source code.
+
+Complete Config Reference:
+```YAML
+ServiceType: ScriptExecutor
+Api: |
+  client = boto3_session.client('rds')
+  return args['UserName']
+Arguments:
+  UserName: bob
+ScriptExecutorConnectionConfig:
+  retries: 0          # Default 0
+  timeout: 60                             # Default 60
+
+HTTPConnectionConfig:    # --> Passed to http_config inside executor shell
+  retries: 0             # Default 0
+  timeout: 60            # Default 60
+
+Boto3ConnectionConfig:   # --> Passed to boto3_config inside executor shell
+  region_name: us-east-1
+  connect_timeout: 30      # Default: 30
+  read_timeout: 60         # Default: 60
+  retries:
+    max_attempts: 0        # Default: 0
+AssumeRoleConfig:         # --> Initialized into boto3_session inside executor shell
+  RoleArn: <arn>
+```
+
+<a name="Conditions"></a>
+## Working with Conditions
+
+Conditions are used at various levels in CFNX. Some of the properties where conditions are used are __SuccessOn__, __FailOn__, __PreValidations__, __PostValidations__. Conditions determine the final True/False status based on mentioned rules and an optional __MasterCondition__. Every condition is made of two properties:
+
+__Conditions__: key value object with format ConditionName: <rule>
+__MasterCondition__(Optional): By default all Conditions should be True. You can specify a master condition to alter the behavior by using __NOT__, __AND__, __OR__ operators.
+
+- Every rule in __Conditions__ block take 3 elements, __Operand1__, __Operator__, __Operand2__.
+- The values for __Operand1__ and __Operand2__ can be provided by intrinsic functions, macros, responses from API requests etc.
+- __Operator__ support all operations supported by FnX::Operator function [Operations](#OperatorFunction)
+
+Basic Conditions Block:
+```YAML
+Conditions:
+  MyCondition: [1, 'eq', '1']
+```
+Though this solves many simple use cases, for slight intermediate levels we will need to write this:
+```YAML
+Conditions:
+  MyCondition1: [1, 'eq', '1']
+  ### Default AND ###
+  MyCondition2: [2, 'eq', '2']
+```
+The final state is determined by using __AND__ of all the mentioned conditions. To change this Default behavior use __MasterCondition__.
+
+```YAML
+Conditions:
+  MyCondition1: [1, 'eq', '1']
+  MyCondition2: [2, 'eq', '2']
+MasterCondition: 'MyCondition1 OR MyCondition2'
+```
+
+The __MasterCondition__ can only have condition names and __AND__, __OR__, __NOT__, __(__ and __)__ literals. **All literals should be separated by at least one space character**
+
+For example the below __MasterCondition__ is possible:
+
+```YAML
+Conditions:
+  LatencyUnderControl:
+    - FnX::GlobalBoto3InputStore: .MyCloudwatchMetric.Latency
+    - lt
+    - 0.1
+  IsWeekday:
+    -
+      FnX::Python: |
+        from datetime import datetime
+        return datetime.now().weekday()
+    - memberof
+    - [0,1,2,3,4]
+  NoActiveOutages:
+    - FnX::GlobalHTTPInputStore: .LatencyStore.ActiveOutages
+    - eq
+    - 0
+MasterCondition: ( LatencyUnderControl AND NoOutagesActive ) OR ( NOT IsWeekDay )
+```
+
+<a name="Validations"></a>
+## Validations
+
+Validations are higher level to Conditions. Validations group [Conditions](#Conditions) objects allowing you to define bigger scenarios to test for success or failure evaluation.
+
+Basic Validation:
+```YAML
+Validations:
+  StorageValidation:
+    [Conditions](#Conditions):
+      EnsureStorageTypeIsGp2: ...
+      EnsureStorageSizeIsMinimum: ...
+      EnsureStorageIsEncrypted: ...
+    MasterCondition: ...
+  AutoScalingValidation:
+    [Conditions](#Conditions):
+      EnsureInstancesAreEvenNumbered: ...
+      EnsureUpdatePolicyIsRolling: ...
+    MasterCondition: ...
 ```
