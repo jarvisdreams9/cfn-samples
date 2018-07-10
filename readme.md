@@ -3656,3 +3656,5 @@ Please refer to https://docs.aws.amazon.com/lambda/latest/dg/vpc.html and https:
 
 1) __Ref__ may not always point to Parameters, as it may reference LogicalResourceIds as well.
 2) Even though CFNX can parse all __Ref__ intrinsic functions and use templateParameterValues to resolve them, it is not appropriate to intrude with cloudformation processing as there could be other transforms dependent on __Ref__ values like Serverless (SAM).
+
+Being said that you can use Ref and GetAtt in Resource level properties, but not at Template Processing
