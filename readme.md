@@ -12,9 +12,9 @@ __CFNX__ provides support for 3 types of apis and provides the output in a gener
 
 Please read through the specific api type you like to use with above links.
 
-Apis are use in CFNX in two different contexts:
+Apis are used in CFNX in two different contexts:
 
-1) Making Simple Api calls in __CFNXPreValidations__, __CFNXPostValidations__, __CFNXDataProvider__, __CFNXDataExporter__. In this context you can query the output of the api using:
+  1) Making Simple Api calls in __CFNXPreValidations__, __CFNXPostValidations__, __CFNXDataProvider__, __CFNXDataExporter__. In this context you can query the output of the api using:
 
 - __FnX::Resp__ intrinsic function
 ```YAML
@@ -26,8 +26,7 @@ Value:
 Value: 'Resp::.ResponseMetadata.HTTPStatusCode'
 ```
 
-2) Polling context where apis are made every PollDelay seconds in __CFNXWaitOn__, __CFNXStabilizeOn__.
-In this context we are waiting for a particular state to be achieved. You can query the final output of the api using:
+  2) Polling context where apis are made every PollDelay seconds in __CFNXWaitOn__, __CFNXStabilizeOn__. In this context we are waiting for a particular state to be achieved. You can query the final output of the api using:
 
 - __FnX::WaitResp__ intrinsic function
 ```YAML
