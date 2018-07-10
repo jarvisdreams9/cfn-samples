@@ -56,7 +56,8 @@ Arguments:
   Bucket: MyS3Bucket
 ```
 
-**Reading response from Boto3 apis**
+**Reading response from Boto3 apis**:
+---
 __CFNX__ supports using [JQ](#UsingJQ) queries on the response of boto3. The output from the API is provided as it is for queries to work with. Eg: create_bucket will provide a response with not just the location of the new bucket but also some response metadata:
 
 ```JSON
@@ -95,7 +96,8 @@ However, when you reference an invalid property you get a __None__ response whic
 None
 ```
 
-**Advanced Boto3 Config**
+**Advanced Boto3 Config**:
+---
 You can also configure boto3 to use different connection settings like __region__, __timeout__, __retries__ etc. For full list see [Boto3 Config Reference](https://botocore.readthedocs.io/en/latest/reference/config.html)
 
 ```YAML
@@ -157,7 +159,8 @@ Arguments:
   body: useful blog
 ```
 
-**Reading response from HTTP apis**
+**Reading response from HTTP apis**:
+---
 CFNX automatically tries to convert the response into a JSON object if response is a valid JSON string otherwise, the response is provided as a string. Response is available inside __RESPONSE__ and status code of the response is available in __STATUS_CODE__.
 
 For example making a GET request to __https://jsonplaceholder.typicode.com/posts?userId=1__
@@ -190,7 +193,8 @@ Once we have the JSON response, we can make [JQ](#UsingJQ) queries.
 My First Post
 ```
 
-**Advanced HTTP Config**
+**Advanced HTTP Config**:
+---
 Similar to boto3 you can configure connection settings with below object:
 
 ```YAML
@@ -237,28 +241,39 @@ When working with boto3/http you can also pass __Boto3ConnectionConfig__ and __A
 
 Along with this you have access to pre-backed functions and sessions as below:
 
-__args__: access arguments passed to Api using args['ArgName']
-__cmd__: Run Shell commands using this function. Output of this function provides 3 values
+* __args__: access arguments passed to Api using args['ArgName']
+
+* __cmd__: Run Shell commands using this function. Output of this function provides 3 values
 ```
 exit_code, output, error = cmd("ls")
 ```
-__event__: access the 'event' object passed to lambda
-__request__: access CFNX/GCR request object for advanced context information like start time, etc.
-__properties__: for CFNX (transforms) this is set to __CFNXConfiguration__. In GCR this is set to __ResourceProperties__.
-__boto3_session__: pre baked boto3 session. If __AssumeRoleConfig__ is passed it initializes the session with role credentials, else uses default lambda execution role.
-__boto3_config__: pre baked config object having __Boto3ConnectionConfig__
-__http_client__: provides a simple interface to work with http requests.
+
+* __event__: access the 'event' object passed to lambda
+
+* __request__: access CFNX/GCR request object for advanced context information like start time, etc.
+
+* __properties__: for CFNX (transforms) this is set to __CFNXConfiguration__. In GCR this is set to __ResourceProperties__.
+
+* __boto3_session__: pre baked boto3 session. If __AssumeRoleConfig__ is passed it initializes the session with role credentials, else uses default lambda execution role.
+
+* __boto3_config__: pre baked config object having __Boto3ConnectionConfig__
+
+* __http_client__: provides a simple interface to work with http requests.
 ```
 http_client.get_result(method, url, retries=0, timeout=60, data={}, headers={})
 ```
-__http_config__: pre baked config object having __HTTPConnectionConfig__ Eg: {'retries': 0, 'timeout': 60}
-__log_client__: helps in logging 'info', 'error', 'debug', 'exception' messages.
+
+* __http_config__: pre baked config object having __HTTPConnectionConfig__ Eg: {'retries': 0, 'timeout': 60}
+
+* __log_client__: helps in formatted logging for 'info', 'error', 'debug', 'exception' messages.
 ```
 log_client.info("Starting execution")
 log_client.exception("Raise exception and fail the request")
 ```
-__dry_run__: helps to determine if request is being run in DryRun mode. Used in CLI.
-__utils__: multiple utility functions including is_string(), is_boolean() etc. For complete list see helpers/utils.py in source code.
+
+* __dry_run__: helps to determine if request is being run in DryRun mode. Used in CLI.
+
+* __utils__: multiple utility functions including is_string(), is_boolean() etc. For complete list see helpers/utils.py in source code.
 
 Complete Config Reference:
 ```YAML
@@ -289,10 +304,13 @@ AssumeRoleConfig:         # --> Initialized into boto3_session inside executor s
 <a name="Conditions"></a>
 ## Working with Conditions
 
-Conditions are used at various levels in CFNX. Some of the properties where conditions are used are __SuccessOn__, __FailOn__, __PreValidations__, __PostValidations__. Conditions determine the final True/False status based on mentioned rules and an optional __MasterCondition__. Every condition is made of two properties:
+Some of the properties where conditions are used are __SuccessOn__, __FailOn__, __CFNXPreValidations__, __CFNXPostValidations__, __CFNXConfiguration/PreValidations__, __CFNXConfiguration/PostValidations__.
 
-__Conditions__: key value object with format ConditionName: <rule>
-__MasterCondition__(Optional): By default all Conditions should be True. You can specify a master condition to alter the behavior by using __NOT__, __AND__, __OR__ operators.
+Conditions determine the final True/False status based on mentioned rules and an optional __MasterCondition__. Every condition is made of two properties:
+
+  * __Conditions__: key value object with format ConditionName: [condition rule]
+
+  * __MasterCondition__(Optional): By default all Conditions should be True. You can specify a master condition to alter the behavior by using __NOT__, __AND__, __OR__ operators.
 
 - Every rule in __Conditions__ block take 3 elements, __Operand1__, __Operator__, __Operand2__.
 - The values for __Operand1__ and __Operand2__ can be provided by intrinsic functions, macros, responses from API requests etc.
@@ -303,7 +321,7 @@ Basic Conditions Block:
 Conditions:
   MyCondition: [1, 'eq', '1']
 ```
-Though this solves many simple use cases, for slight intermediate levels we will need to write this:
+Though this solves many simple use cases, for slightly intermediate levels we will need to write this:
 ```YAML
 Conditions:
   MyCondition1: [1, 'eq', '1']
@@ -346,20 +364,26 @@ MasterCondition: ( LatencyUnderControl AND NoOutagesActive ) OR ( NOT IsWeekDay 
 <a name="Validations"></a>
 ## Validations
 
-Validations are higher level to Conditions. Validations group [Conditions](#Conditions) objects allowing you to define bigger scenarios to test for success or failure evaluation.
+Validations are used in __CFNXConfiguration/PreValidations__, __CFNXConfiguration/PostValidations, __CFNXPreValidations__, __CFNXPostValidations__.
 
-Basic Validation:
+Validations group multiple [Conditions](#Conditions) objects allowing you to define bigger scenarios to test for success or failure scenarios.
+
+Basic Validation Object:
 ```YAML
 Validations:
   StorageValidation:
-    [Conditions](#Conditions):
-      EnsureStorageTypeIsGp2: ...
-      EnsureStorageSizeIsMinimum: ...
-      EnsureStorageIsEncrypted: ...
-    MasterCondition: ...
+    Conditions:
+      SizeReduced: [ $[PARAM::StorageSize], 'lt', $[OLDPARAM::StorageSize] ]
+      TypeChanged: [ $[PARAM::StorageType], 'ne', $[OLDPARAM::StorateType] ]
+    MasterCondition: 'NOT SizeReduced AND NOT TypeChanged'  # Optional
   AutoScalingValidation:
-    [Conditions](#Conditions):
+    Conditions:
       EnsureInstancesAreEvenNumbered: ...
       EnsureUpdatePolicyIsRolling: ...
+    # Optional master condition
     MasterCondition: ...
 ```
+
+- All the validation objects should succeed for the validation to be considered successful.
+- You can use any intrinsic functions and macros in Validations
+- For Post type validations you can use responses from API requests made.
