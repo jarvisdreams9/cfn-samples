@@ -69,7 +69,6 @@
   - [Working with IO Stores](#WorkingWithIOStores)
   - [Using VPC Configuration](#UsingVPCConfiguration)
 
-
 <a name="Setup"></a>
 # Setup
 
@@ -99,19 +98,17 @@ Above command will setup:
 
 **SECURITY**:
 ---
-By default the setup deploys the lambda execution role with __AdministratorAccess__. If you wish to work with only a few features, limit the access in __crh-serverless.yml__ in source code and run ```cfnxmd deploy-cfnx```. CFNX provides options to work with all AWS services using boto3 and also allows you to configure Assume Role configs.
-
-If you have to setup VPC access to work with internal endpoints, refer to [VPC](#UsingVPCConfiguration)
+By default the setup deploys the lambda execution role with AdministratorAccess. If you wish to work with only a few features, limit the access in __crh-serverless.yml__ in source code and __cfnxmd deploy-cfnx__. CFNX provides options to work with all AWS services using boto3 and also allows you to configure Assume Role configs.
 
 <a name="CLISetupUsage"></a>
 ## CLI Setup and Usage
 
 **CLI Features**
-* Test transform templates locally
-* Run transform using sam local
-* Print debug messages (prints sensitive data as well)
-* Print Execution Order of resources (defaut in cli mode)
-* Generates cloudformation cli commands while testing templates for easy deployment (copy and paste)
+  * Test transform templates locally
+  * Run transform using sam local
+  * Print debug messages (prints sensitive data as well)
+  * Print Execution Order of resources (defaut in cli mode)
+  * Generates cloudformation cli commands while testing templates for easy deployment (copy and paste)
 
 __CFNX__ provides a CLI which makes it easy to test transform templates locally without having to deploy them to cloudformation or create change set every time.
 
@@ -157,6 +154,7 @@ bash cfnxcmd transform-local -t docs/samples/transform/cli-usage/basic.yaml
 ```
 bash cfnxcmd transform-local -t docs/samples/macro/cli-usage/basic.yaml --debug --raw --cli-mode
 ```
+
 <a name="CLItransformlocalsam"></a>
 ## transform-local-sam
 
@@ -190,9 +188,9 @@ Transform: [CFNX]
 
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 ```
 
 [docs/samples/transform/setup/basic_transform_with_parameters.yaml](/docs/samples/transform/setup/basic_transform_with_parameters.yaml)
@@ -204,19 +202,19 @@ bash cfnxcmd transform-local -t docs/samples/transform/setup/basic_transform_wit
 
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 CFNXConfiguration:
-__GLOBALVARS__:
-  ProductionTags:
-    - Key: Environment
-      Value: Production
+  __GLOBALVARS__:
+    ProductionTags:
+      - Key: Environment
+        Value: Production
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-    Tags: $[GLOBAL::ProductionTags]
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags: $[GLOBAL::ProductionTags]
 ```
 
 [docs/samples/transform/setup/basic_transform_cfnxconfiguration.yaml](/docs/samples/transform/setup/basic_transform_cfnxconfiguration.yaml)
@@ -227,20 +225,20 @@ bash cfnxcmd transform-local -t docs/samples/transform/setup/basic_transform_cfn
 * Using with other Transforms
 ```YAML
 Transform:
-# Call CFNX initially
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
-# Pass the transformed template to SAM
-- Name: AWS::Serverless-2016-10-31
-# Post process the template
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
-    FinalTemplateOverride: |
-      - LogicalResourceIds: ['.+']
-        Apply:
-          DeletionPolicy: Retain
+  # Call CFNX initially
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
+  # Pass the transformed template to SAM
+  - Name: AWS::Serverless-2016-10-31
+  # Post process the template
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
+      FinalTemplateOverride: |
+        - LogicalResourceIds: ['.+']
+          Apply:
+            DeletionPolicy: Retain
 ```
 
 [docs/samples/transform/setup/multiple_transforms.yaml](/docs/samples/transform/setup/multiple_transforms.yaml)
@@ -265,16 +263,16 @@ _Note: Macros, Intrinsic functions and Includes can be used in any section of th
 ```YAML
 Transform: CFNX
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-    Tags:
-      - Key: LastUpdatedAt
-        Value: $[MACRO::DateTime]
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: LastUpdatedAt
+          Value: $[MACRO::DateTime]
 
 Outputs:
-RandomUUID:
-  Value: $[MACRO::RandomUUID]
+  RandomUUID:
+    Value: $[MACRO::RandomUUID]
 ```
 [docs/samples/transform/funcs_macros/basic_sample.yaml](/docs/samples/transform/funcs_macros/basic_sample.yaml)
 ```
@@ -285,14 +283,14 @@ Some of the macros referencing stack attributes require providing __StackName__ 
 
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-    BucketName: my-bucket-$[MACRO::StackSHASUM]
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: my-bucket-$[MACRO::StackSHASUM]
 ```
 [docs/samples/transform/funcs_macros/basic_sample2.yaml](/docs/samples/transform/funcs_macros/basic_sample2.yaml)
 ```
@@ -300,14 +298,14 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/basic_sample
 ```
 ##### Special Macros
 
-- __$[MACRO::SHASUM]__ - Provides first 10 characters of SHA256 of the string prefix
+- $[MACRO::SHASUM] - Provides first 10 characters of SHA256 of the string prefix
 
 ```YAML
 string-to-create-shasum-from-$[MACRO::SHASUM]
 ---
 string-to-create-macro-from-7e398284bf
 ```
-- $[MACRO::StackSHASUM] - Provides first 10 characters of SHA256 of StackId. Use this to reuse the same template to create named resources, as this value will be highly unique and immutable per stack.
+- __$[MACRO::StackSHASUM]__ - Provides first 10 characters of SHA256 of StackId. Use this to reuse the same template to create named resources, as this value will be highly unique and immutable per stack.
 
 ```YAML
 BucketName: my-bucket-$[MACRO::StackSHASUM]
@@ -362,24 +360,24 @@ _Note: Macros, Intrinsic Functions, Includes can be used at any level in the tem
 * Integer (int)
 ```YAML
 FnX::Type:
-Value: '100'
-Type: int
+  Value: '100'
+  Type: int
 ---
 100
 ```
 * String (str)
 ```YAML
 FnX::Type:
-Value: 100
-Type: str
+  Value: 100
+  Type: str
 ---
 '100'
 ```
 * Float (float)
 ```YAML
 FnX::Type:
-Type: float
-Value: '100.1'
+  Type: float
+  Value: '100.1'
 ---
 100.1
 ```
@@ -388,16 +386,16 @@ Value: '100.1'
 
 ```YAML
 FnX::Type:
-Type: none
-Value: 'none'
+  Type: none
+  Value: 'none'
 ---
 None
 ```
 * Boolean (bool)
 ```YAML
 FnX::Type:
-Type: bool
-Value: 100
+  Type: bool
+  Value: 100
 ---
 True
 
@@ -415,9 +413,9 @@ Others - False
 
 ```YAML
 FnX::Type:
-Type: json
-Value:
-  Key: Value
+  Type: json
+  Value:
+    Key: Value
 ---
 '{"Key": "Value"}'
 ```
@@ -426,11 +424,11 @@ Value:
 
 ```YAML
 FnX::Type:
-Type: jsonobj
-Value: '{"Key": "Value"}'
+  Type: jsonobj
+  Value: '{"Key": "Value"}'
 ---
 {
-  "Key": "Value"
+    "Key": "Value"
 }
 ```
 
@@ -438,9 +436,9 @@ Value: '{"Key": "Value"}'
 
 ```YAML
 FnX::Type:
-Type: yaml
-Value:
-  Key: Value
+  Type: yaml
+  Value:
+    Key: Value
 ---
 "{Key: Value}\n"
 ```
@@ -448,8 +446,8 @@ Value:
 * YAML Object from string
 ```YAML
 FnX::Type:
-Type: yamlobj
-Value: "{Key: Value}\n"
+  Type: yamlobj
+  Value: "{Key: Value}\n"
 ---
 Key: Value
 ```
@@ -457,8 +455,8 @@ Key: Value
 * Using CFN Flip to JSON (cfnflipjson)
 ```YAML
 FnX::Type:
-Type: cfnflipjson
-Value: "!Ref MyResource"
+  Type: cfnflipjson
+  Value: "!Ref MyResource"
 ---
 "{\n    \"Ref\": \"MyResource\"\n}"
 ```
@@ -466,8 +464,8 @@ Value: "!Ref MyResource"
 * Using CFN Flip to YAML (cfnflipyaml)
 ```YAML
 FnX::Type:
-Type: cfnflipyaml
-Value: '{"Fn::GetAtt": ["MyResource", "Arn"]}'
+  Type: cfnflipyaml
+  Value: '{"Fn::GetAtt": ["MyResource", "Arn"]}'
 ---
 "!GetAtt 'MyResource.Arn'\n"
 ```
@@ -476,16 +474,16 @@ Value: '{"Fn::GetAtt": ["MyResource", "Arn"]}'
 
 ```YAML
 Value:
-FnX::Type:
-  Value:
-    FnX::Type:
-      Value: |
-        {"Key": "Value"}
-      Type: cfnflipyaml
-  Type: yamlobj
+  FnX::Type:
+    Value:
+      FnX::Type:
+        Value: |
+          {"Key": "Value"}
+        Type: cfnflipyaml
+    Type: yamlobj
 ---
 Value:
-Key: Value
+  Key: Value
 ```
 [docs/samples/transform/funcs_macros/type_function.yaml](/docs/samples/transform/funcs_macros/type_function.yaml)
 ```
@@ -515,19 +513,19 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/operator_fun
 
 ```YAML
 FnX::Python: |
-return range(1, 10)
+  return range(1, 10)
 ---
 [1,2,3,4,5,6,7,8,9]
 ```
 
-__Note__: __Timeout for the FnX::Python__ code execution is __30 seconds__
+__Note__: Timeout for FnX::Python code execution is __30 seconds__
 
 * __cmd__ is a pre baked function to run any arbitrary linux commands. The output of the command contains 3 values: ```[exit_code, output, error]```.
 
 ```YAML
 FnX::Python: |
-exit_code, out, err = cmd("ls")
-return out
+  exit_code, out, err = cmd("ls")
+  return out
 ---
 file1 file2 file3
 ```
@@ -536,27 +534,27 @@ __cmd__ also tries to convert the output to JSON object, and if it fails, return
 
 ```YAML
 FnX::Python: |
-return cmd('echo {"Key": "Value"}')
+  return cmd('echo {"Key": "Value"}')
 ---
 [
-  0,   --> exit code
-  {
-      "Key": "Value"
-  },
-  null --> error
+    0,   --> exit code
+    {
+        "Key": "Value"
+    },
+    null --> error
 ]
 ```
 * __boto3__ client makes it easy to run simple boto3 commands (considering 30 seconds time). However, if you require larger timeouts or read data from multiple boto3 api calls, use [Global Input Stores](#GlobalInputStores)
 
 ```YAML
 FnX::Python: |
-result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
-return result['StackResources'][0]
+  result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
+  return result['StackResources'][0]
 ---
 {
-  "LogicalResourceId": "CFNExtensionLambdaFunction",
-  "ResourceType": "AWS::Lambda::Function",
-  ... truncated ...
+    "LogicalResourceId": "CFNExtensionLambdaFunction",
+    "ResourceType": "AWS::Lambda::Function",
+    ... truncated ...
 }
 ```
 
@@ -566,13 +564,13 @@ Similar to __cmd__, __http_client__ also tries to convert result to JSON object 
 
 ```YAML
 ActiveOutages:
-FnX::Python: |
-  return http_client.get_result('GET', 'https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/active_outages')
+  FnX::Python: |
+    return http_client.get_result('GET', 'https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/active_outages')
 ---
 ActiveOutages:
-RESPONSE:
-  active_outages: 0
-STATUS_CODE: 200
+  RESPONSE:
+    active_outages: 0
+  STATUS_CODE: 200
 ```
 [docs/samples/transform/funcs_macros/python_function.yaml](/docs/samples/transform/funcs_macros/python_function.yaml)
 ```
@@ -581,7 +579,7 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/python_funct
 
 - __FnX::GetParam__: Query Parameters passed to to the template. This intrinsic function also supports macro usage __$[PARAM::ParameterName]__
 
-[Why Can't I use Ref Instead?](#WhyNotRef)
+[Why can't I use Ref](#WhyNotRef)
 
 **You cannot access protected values using this function**
 
@@ -589,13 +587,13 @@ Basic Syntax:
 
 ```YAML
 Parameters:
-MyParameter:
-  Type: String
+  MyParameter:
+    Type: String
 CFNXConfiguration:
-GlobalVariables:
-  MyParam:
-    FnX::GetParam: MyParameter
-  MyParamMacro: $[PARAM::MyParameter]
+  GlobalVariables:
+    MyParam:
+      FnX::GetParam: MyParameter
+    MyParamMacro: $[PARAM::MyParameter]
 ```
 
 - __FnX::GetOldParam__: Query Parameters passed to to the template. This intrinsic function also supports macro usage __$[OLDPARAM::ParameterName]__
@@ -610,13 +608,13 @@ Basic Syntax:
 
 ```YAML
 Parameters:
-MyParameter:
-  Type: String
+  MyParameter:
+    Type: String
 CFNXConfiguration:
-GlobalVariables:
-  MyParam:
-    FnX::GetOldParam: MyParameter
-  MyParamMacro: $[OLDPARAM::MyParameter]
+  GlobalVariables:
+    MyParam:
+      FnX::GetOldParam: MyParameter
+    MyParamMacro: $[OLDPARAM::MyParameter]
 ```
 
 - __FnX::Template__: Use [JQ](#UsingJQ) to query Values from Template object.
@@ -627,13 +625,13 @@ Basic Syntax:
 
 ```YAML
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
 
 Outputs:
-BucketType:
-  Value:
-    FnX::Template: .Resources.MyS3Bucket.Type
+  BucketType:
+    Value:
+      FnX::Template: .Resources.MyS3Bucket.Type
 ```
 [docs/samples/transform/funcs_macros/template-function.yaml](/docs/samples/transform/funcs_macros/template-function.yaml)
 ```
@@ -648,13 +646,13 @@ Basic Syntax:
 
 ```YAML
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
 
 Outputs:
-BucketType:
-  Value:
-    FnX::OldOriginalTemplate: .Resources.MyS3Bucket.Type
+  BucketType:
+    Value:
+      FnX::OldOriginalTemplate: .Resources.MyS3Bucket.Type
 ```
 [docs/samples/transform/funcs_macros/old-original-template-function.yaml](/docs/samples/transform/funcs_macros/old-original-template-function.yaml)
 ```
@@ -669,13 +667,13 @@ Basic Syntax:
 
 ```YAML
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
 
 Outputs:
-BucketType:
-  Value:
-    FnX::OldProcessedTemplate: .Resources.MyS3Bucket.Type
+  BucketType:
+    Value:
+      FnX::OldProcessedTemplate: .Resources.MyS3Bucket.Type
 ```
 [docs/samples/transform/funcs_macros/old-processed-template-function.yaml](/docs/samples/transform/funcs_macros/old-processed-template-function.yaml)
 ```
@@ -688,11 +686,11 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/old-processe
 
 ```YAML
 FnX::Query:
-Object:
-  FnX::Python: |
-    result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
-    return result['StackResources']
-Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
+  Object:
+    FnX::Python: |
+      result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
+      return result['StackResources']
+  Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
 ---
 UPDATE_COMPLETE
 ```
@@ -702,22 +700,19 @@ If you wish to run the same query for multiple properties, instead use [GlobalVa
 ```YAML
 ...
 CFNXConfiguration:
-__GLOBALVARS__:
-  StackResources:
-    FnX::Query:
-      Object:
-        FnX::Python: |
-          result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
-          return result['StackResources']
-      Query: '.'
+  __GLOBALVARS__:
+    StackResources:
+      FnX::Python: |
+        result = boto3.client("cloudformation").describe_stack_resources(StackName="awscfn-extension-gcr-DONOTDELETE")
+        return result['StackResources']
 Resources:
-MyResource:
-  Type: AWS::TypeFunction::Sample
-  Properties:
-    PartResultFromGlobalVariable:
-      FnX::Query:
-        Object: $[GLOBAL::StackResources]
-        Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
+  MyResource:
+    Type: AWS::TypeFunction::Sample
+    Properties:
+      PartResultFromGlobalVariable:
+        FnX::Query:
+          Object: $[GLOBAL::StackResources]
+          Query: '.[] | select(.LogicalResourceId == "CFNExtensionLambdaFunction") | .ResourceStatus'
 ```
 [docs/samples/transform/funcs_macros/query_function.yaml](/docs/samples/transform/funcs_macros/query_function.yaml)
 ```
@@ -732,33 +727,33 @@ Global variables are handy to declare values at a single place and reuse them ac
 ```YAML
 Transform: CFNX
 CFNXConfiguration:
-__GLOBALVARS__:
-  ProductionTags:
-    - Key: UpdatedAt
-      Value: $[MACRO::DateTime]
-  BucketName:
-    FnX::Python: return 'MyBucket'
-  SimpleValue: 100
-Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
+  __GLOBALVARS__:
+    ProductionTags:
+      - Key: UpdatedAt
+        Value: $[MACRO::DateTime]
     BucketName:
-      FnX::GetGlobalVariable: BucketName         # Using FnX::GetGlobalVariable
-    Tags: $[GLOBAL::ProductionTags]              # Using $[GLOBAL::...]
-    OtherProperty: $[GLOBAL::SimpleValue]
+      FnX::Python: return 'MyBucket'
+    SimpleValue: 100
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        FnX::GetGlobalVariable: BucketName         # Using FnX::GetGlobalVariable
+      Tags: $[GLOBAL::ProductionTags]              # Using $[GLOBAL::...]
+      OtherProperty: $[GLOBAL::SimpleValue]
 ```
 
 ```YAML
 Resources:
-MyS3Bucket:
-  Properties:
-    BucketName: MyBucket
-    OtherProperty: 100
-    Tags:
-      - Key: UpdatedAt
-        Value: 2018-07-08T18:27:56.328994 UTC
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    Properties:
+      BucketName: MyBucket
+      OtherProperty: 100
+      Tags:
+        - Key: UpdatedAt
+          Value: 2018-07-08T18:27:56.328994 UTC
+    Type: AWS::S3::Bucket
 ```
 
 [docs/samples/transform/funcs_macros/global_variables.yaml](/docs/samples/transform/funcs_macros/global_variables.yaml)
@@ -776,7 +771,6 @@ Input Stores support downloding data from __S3, boto3, HTTP, Custom Python Scrip
 All Input Stores allow you to define a __StoreIdentifier__ under which you download the data. This allows you to define multiple input stores of different types.
 
 _NOTE: All input store data providers should return a valid JSON or a YAML string_
-
 _NOTE: Intrinsic functions and macros can be used to define input store configurations_
 
 <a name="GlobalS3InputStores"></a>
@@ -784,38 +778,38 @@ _NOTE: Intrinsic functions and macros can be used to define input store configur
 
 ```JSON
 {
-"Tags": [
-  {
-    "Key": "Environment",
-    "Value": "Dev"
-  }
-]
+  "Tags": [
+    {
+      "Key": "Environment",
+      "Value": "Dev"
+    }
+  ]
 }
 ```
 ```YAML
 Transform: CFNX
 CFNXConfiguration:
-GlobalS3InputStores:
-  Stores:
-    S3Data: s3://mybucket/bucketconfig.json
-    S3SecondaryData: s3://mybucket/bucketconfig.json
+  GlobalS3InputStores:
+    Stores:
+      S3Data: s3://mybucket/bucketconfig.json
+      S3SecondaryData: s3://mybucket/bucketconfig.json
 Resources:
-MyResource:
-  Type: AWS::S3::SampleBucket
-  Properties:
-    Tags:
-      FnX::GlobalS3Store: ".S3Data.Tags"
-    SecondaryTags:
-      FnX::GlobalS3Store: ".S3SecondaryData.Tags"
+  MyResource:
+    Type: AWS::S3::SampleBucket
+    Properties:
+      Tags:
+        FnX::GlobalS3Store: ".S3Data.Tags"
+      SecondaryTags:
+        FnX::GlobalS3Store: ".S3SecondaryData.Tags"
 ```
 ```YAML
 Resources:
-MyS3Bucket:
-  Properties:
-    Tags:
-      - Key: Environment
-        Value: Dev
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    Properties:
+      Tags:
+        - Key: Environment
+          Value: Dev
+    Type: AWS::S3::Bucket
 ```
 
 [docs/samples/transform/funcs_macros/global_s3_input_stores.yaml](/docs/samples/transform/funcs_macros/global_s3_input_stores.yaml)
@@ -827,10 +821,10 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/global_s3_in
 - __GlobalS3InputStores__ with __AssumeRoleConfig__
 ```YAML
 GlobalS3InputStores:
-Stores:
-  S3Data: s3://mybucket/bucketconfig.json
-AssumeRoleConfig:
-  RoleArn: <cross-account-or-privileged-role-arn>
+  Stores:
+    S3Data: s3://mybucket/bucketconfig.json
+  AssumeRoleConfig:
+    RoleArn: <cross-account-or-privileged-role-arn>
 ```
 [docs/samples/transform/funcs_macros/global_s3_input_stores_assume_roles.yaml](/docs/samples/transform/funcs_macros/global_s3_input_stores_assume_roles.yaml)
 ```
@@ -853,20 +847,20 @@ We access the output data using __FnX::GlobalBoto3Store__ function.
 ```YAML
 Transform: CFNX
 CFNXConfiguration:
-GlobalBoto3InputStores:
-  Stores:
-    StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE}]
+  GlobalBoto3InputStores:
+    Stores:
+      StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE}]
 Resources:
-MyResource:
-  Properties:
-    Configuration:
-      FnX::GlobalBoto3Store: .StackData.Stacks[0].Outputs[] | select(.OutputKey == "CFNExtensionTransform") | .OutputValue
+  MyResource:
+    Properties:
+      Configuration:
+        FnX::GlobalBoto3Store: .StackData.Stacks[0].Outputs[] | select(.OutputKey == "CFNExtensionTransform") | .OutputValue
 ```
 ```YAML
 Resources:
-MyResource:
-  Properties:
-    Configuration: ACCOUNTID::CFNX
+  MyResource:
+    Properties:
+      Configuration: ACCOUNTID::CFNX
 ```
 [docs/samples/transform/funcs_macros/global_boto3_input_stores.yaml](/docs/samples/transform/funcs_macros/global_boto3_input_stores.yaml)
 ```
@@ -878,11 +872,11 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/global_boto3
 ```YAML
 Transform: CFNX
 CFNXConfiguration:
-GlobalBoto3InputStores:
-  Stores:
-    StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE}]
-  AssumeRoleConfig:
-    RoleArn: <cross-account-or-privileged-role-arn>
+  GlobalBoto3InputStores:
+    Stores:
+      StackData: [cloudformation/describe_stacks, {StackName: awscfn-extension-gcr-DONOTDELETE}]
+    AssumeRoleConfig:
+      RoleArn: <cross-account-or-privileged-role-arn>
 ...
 ```
 [docs/samples/transform/funcs_macros/global_boto3_input_stores_assume_roles.yaml](/docs/samples/transform/funcs_macros/global_boto3_input_stores_assume_roles.yaml)
@@ -895,32 +889,32 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/global_boto3
 
 ```json
 {
-"STATUS": "<http_status_code>",
-"RESPONSE": "<json loaded object if possible else string>"
+  "STATUS": "<http_status_code>",
+  "RESPONSE": "<json loaded object if possible else string>"
 }
 ```
 
 ```YAML
 Transform: CFNX
 CFNXConfiguration:
-GlobalHTTPInputStores:
-  Stores:
-    JenkinsStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-status-provider.json
+  GlobalHTTPInputStores:
+    Stores:
+      JenkinsStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-status-provider.json
 Resources:
-MyResource:
-  Properties:
-    Status:
-      FnX::GlobalHTTPStore: .JenkinsStore
+  MyResource:
+    Properties:
+      Status:
+        FnX::GlobalHTTPStore: .JenkinsStore
 ```
 ```YAML
 Resources:
-MyResource:
-  Properties:
-    Status:
-      RESPONSE:
-        jenkinsjobstatus: completed
-      STATUS_CODE: 200
-  Type: AWS::S3::Bucket
+  MyResource:
+    Properties:
+      Status:
+        RESPONSE:
+          jenkinsjobstatus: completed
+        STATUS_CODE: 200
+    Type: AWS::S3::Bucket
 ```
 [docs/samples/transform/funcs_macros/global_http_input_stores.yaml](/docs/samples/transform/funcs_macros/global_http_input_stores.yaml)
 ```
@@ -929,30 +923,30 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/global_http_
 - __GlobalHTTPInputStores__ with __POST__
 ```YAML
 GlobalHTTPInputStores:
-Stores:
-  JenkinsStore:
-    - POST
-    - <url>
+  Stores:
+    JenkinsStore:
+      - POST
+      - <url>
 ```
 
 - __GlobalHTTPInputStores__ with __POST__ and __DATA__
 ```YAML
 GlobalHTTPInputStores:
-Stores:
-  JenkinsStore:
-    - POST
-    - <url>
-    - {'username': 'Bob'}
+  Stores:
+    JenkinsStore:
+      - POST
+      - <url>
+      - {'username': 'Bob'}
 ```
 
 - __GlobalHTTPInputStores__ with __GET__ and __PARAMS__
 ```YAML
 GlobalHTTPInputStores:
-Stores:
-  JenkinsStore:
-    - GET
-    - <url>
-    - {'username': 'Bob'}   --> will be translated to query params ?username=Bob
+  Stores:
+    JenkinsStore:
+      - GET
+      - <url>
+      - {'username': 'Bob'}   --> will be translated to query params ?username=Bob
 ```
 
 <a name="GlobalScriptInputStores"></a>
@@ -962,8 +956,8 @@ The output of script stores is accessible in the below object format:
 
 ```json
 {
-"EXIT_CODE": "<exit_code>",
-"OUTPUT": "<json loaded object if possible else string>"
+  "EXIT_CODE": "<exit_code>",
+  "OUTPUT": "<json loaded object if possible else string>"
 }
 ```
 
@@ -978,20 +972,20 @@ cmd() - access to run shell commands
 ```YAML
 Transform: CFNX
 Parameters:
-AvailabilityZones:
-  Type: CommaDelimitedList
-  Default: ap-southeast-2a, ap-southeast-2b
+  AvailabilityZones:
+    Type: CommaDelimitedList
+    Default: ap-southeast-2a, ap-southeast-2b
 CFNXConfiguration:
-GlobalScriptInputStores:
-  Stores:
-    CustomStore: |
-      return len($[PARAM::AvailabilityZones]) * 2
+  GlobalScriptInputStores:
+    Stores:
+      CustomStore: |
+        return len($[PARAM::AvailabilityZones]) * 2
 Resources:
-MyAutoScalingGroup:
-  Type: AWS::AutoScaling::AutoScalingGroup
-  Properties:
-    MinSize:
-      FnX::GlobalScriptStore: .CustomStore.OUTPUT
+  MyAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize:
+        FnX::GlobalScriptStore: .CustomStore.OUTPUT
 ```
 
 [docs/samples/transform/funcs_macros/global_script_input_stores.yaml](/docs/samples/transform/funcs_macros/global_script_input_stores.yaml)
@@ -1004,13 +998,13 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/global_scrip
 ```YAML
 Transform: CFNX
 CFNXConfiguration:
-GlobalScriptInputStores:
-  Stores:
-    CustomStore: |
-      # boto3_session uses assume role config
-      return boto3_session.client('cloudformation').describe_stacks()
-  AssumeRoleConfig:
-    RoleArn: <cross-account-or-privileged-role-arn>
+  GlobalScriptInputStores:
+    Stores:
+      CustomStore: |
+        # boto3_session uses assume role config
+        return boto3_session.client('cloudformation').describe_stacks()
+    AssumeRoleConfig:
+      RoleArn: <cross-account-or-privileged-role-arn>
 ```
 [docs/samples/transform/funcs_macros/global_script_input_stores_assume_roles.yaml](/docs/samples/transform/funcs_macros/global_script_input_stores_assume_roles.yaml)
 ```
@@ -1037,21 +1031,21 @@ For example, in the below configuration, we are downloading Mappings section fro
 ```YAML
 Transform: [CFNX]
 CFNX::Include::HTTPTemplate:
-Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/mappings.yaml
+  Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/mappings.yaml
 Resources:
-MyResource:
-  ...
+  MyResource:
+    ...
 ```
 Transformed Template:
 ```YAML
 Mappings:
-AWSInstanceType2Arch:
-  c1.medium:
-    Arch: PV64
-  ...
+  AWSInstanceType2Arch:
+    c1.medium:
+      Arch: PV64
+    ...
 Resources:
-MyResource:
-  ...
+  MyResource:
+    ...
 ```
 [docs/samples/transform/includes/http_include.yaml](/docs/samples/transform/includes/http_include.yaml)
 ```
@@ -1062,10 +1056,10 @@ You can include HTTP templates at any level in the template as follows:
 
 ```YAML
 MyIAMUser:
-Type: AWS::IAM::User
-Properties:
-  CFNX::Include::HTTPTemplate:
-    Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-username.yaml
+  Type: AWS::IAM::User
+  Properties:
+    CFNX::Include::HTTPTemplate:
+      Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-username.yaml
 ```
 [docs/samples/transform/includes/http_include_any_level.yaml](/docs/samples/transform/includes/http_include_any_level.yaml)
 ```
@@ -1085,15 +1079,15 @@ Templates are downloaded after preparing __GLOBALVARS__ and __Global*InputStores
 
 ```YAML
 MyIAMUser:
-Type: AWS::IAM::User
-Properties:
-  CFNX::Include::HTTPTemplate:
-    Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-username.yaml
-  Policies:
-    - CFNX::Include::HTTPTemplate:
-        Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-user-policy-deny-iam.yaml
-    - CFNX::Include::HTTPTemplate:
-        Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-user-policy-allow-ec2.yaml
+  Type: AWS::IAM::User
+  Properties:
+    CFNX::Include::HTTPTemplate:
+      Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-username.yaml
+    Policies:
+      - CFNX::Include::HTTPTemplate:
+          Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-user-policy-deny-iam.yaml
+      - CFNX::Include::HTTPTemplate:
+          Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-user-policy-allow-ec2.yaml
 ```
 [docs/samples/transform/includes/http_include_multiple.yaml](/docs/samples/transform/includes/http_include_multiple.yaml)
 ```
@@ -1104,17 +1098,17 @@ bash cfnxcmd transform-local -t docs/samples/transform/includes/http_include_mul
 ```YAML
 Transform: [CFNX]
 CFNXConfiguration:
-GlobalHTTPIncludeAuthConfig:   #(Optional Global level)
-  Username: bob
-  Password: password
+  GlobalHTTPIncludeAuthConfig:   #(Optional Global level)
+    Username: bob
+    Password: password
 MyIAMPolicy:
-Type: AWS::IAM::Policy
-Properties:
-  CFNX::Include::HTTPTemplate:
-    OverrideAuthConfig:         #(Optional)
-      Username: admin
-      Password: password
-    Location: <httpurl>
+  Type: AWS::IAM::Policy
+  Properties:
+    CFNX::Include::HTTPTemplate:
+      OverrideAuthConfig:         #(Optional)
+        Username: admin
+        Password: password
+      Location: <httpurl>
 ```
 [docs/samples/transform/includes/http_include_basic_auth.yaml](/docs/samples/transform/includes/http_include_basic_auth.yaml)
 
@@ -1129,49 +1123,49 @@ Below template first adds universal allow actions, followed by deny to iam, clou
 
 ```YAML
 MyIAMPolicy:
-Type: AWS::IAM::Policy
-Properties:
-  PolicyDocument:
-    Statement:
-      CFNX::Include::HTTPTemplate:
-        - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/all-allow-actions-list.yaml
-        - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/deny-iam-cloudwatchlogs-actions-list.yaml
-        - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/deny-iam-database-action-list.yaml
+  Type: AWS::IAM::Policy
+  Properties:
+    PolicyDocument:
+      Statement:
+        CFNX::Include::HTTPTemplate:
+          - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/all-allow-actions-list.yaml
+          - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/deny-iam-cloudwatchlogs-actions-list.yaml
+          - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/deny-iam-database-action-list.yaml
 ```
 
 ```YAML
 Resources:
-MyIAMPolicy:
-  Properties:
-    PolicyDocument:
-      Statement:
-        - Action:
-            - '*'
-          Effect: Allow
-          Resource: '*'
-        - Action:
-            - iam:*
-          Effect: Deny
-          Resource: '*'
-        - Action:
-            - logs:*
-          Effect: Deny
-          Resource: '*'
-        - Action:
-            - rds:*
-            - elasticsearch:*
-          Effect: Deny
-          Resource: '*'
-        - Action:
-            - dynamodb:*
-            - redshift:*
-          Effect: Deny
-          Resource: '*'
-        - Action:
-            - iam:*
-          Effect: Deny
-          Resource: '*'
-  Type: AWS::IAM::Policy
+  MyIAMPolicy:
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - '*'
+            Effect: Allow
+            Resource: '*'
+          - Action:
+              - iam:*
+            Effect: Deny
+            Resource: '*'
+          - Action:
+              - logs:*
+            Effect: Deny
+            Resource: '*'
+          - Action:
+              - rds:*
+              - elasticsearch:*
+            Effect: Deny
+            Resource: '*'
+          - Action:
+              - dynamodb:*
+              - redshift:*
+            Effect: Deny
+            Resource: '*'
+          - Action:
+              - iam:*
+            Effect: Deny
+            Resource: '*'
+    Type: AWS::IAM::Policy
 ```
 
 * (Optional 2) __MergeIntoPrevious__: Add only if previous block does not already have the list element included. For example, you have some default tags managed at organization level which you want to be applied, but there are environment specific tags which are applied to specific resources. There could be duplicate key value pairs in both the configurations which you want to avoid while merging.
@@ -1182,53 +1176,53 @@ _NOTE: Available for Jinja template includes as well._
 production-tags.yaml
 
 - Key: Environment
-Value: Production
+  Value: Production
 - Key: Logging
-Value: Enabled
+  Value: Enabled
 ```
 
 ```YAML
 production-tags.yaml
 
 - Key: Environment
-Value: Production
+  Value: Production
 - Key: Logging
-Value: Enabled
+  Value: Enabled
 ```
 
 ```YAML
 default-tags.yaml
 
 - Key: Logging
-Value: Enabled
+  Value: Enabled
 - Key: cost-allocation
-Value: quotas
+  Value: quotas
 ```
 
 ```YAML
 MyS3Bucket:
-Type: AWS::S3::Bucket
-Properties:
-  Tags:
-    CFNX::Include::HTTPTemplate:
-      - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/production-tags.yaml
-      -
-        Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/default-tags.yaml
-        MergeIntoPrevious: true
+  Type: AWS::S3::Bucket
+  Properties:
+    Tags:
+      CFNX::Include::HTTPTemplate:
+        - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/production-tags.yaml
+        -
+          Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/default-tags.yaml
+          MergeIntoPrevious: true
 ```
 
 Result is __Logging__ tag is not duplicated when you enable __MergeIntoPrevious__
 ```YAML
 MyS3Bucket:
-Properties:
-  Tags:
-    - Key: Environment
-      Value: Production
-    - Key: Logging
-      Value: Enabled
-    - Key: cost-allocation
-      Value: quotas
-Type: AWS::S3::Bucket
+  Properties:
+    Tags:
+      - Key: Environment
+        Value: Production
+      - Key: Logging
+        Value: Enabled
+      - Key: cost-allocation
+        Value: quotas
+  Type: AWS::S3::Bucket
 ```
 
 <a name="TemplateInheritanceDicts"></a>
@@ -1248,30 +1242,30 @@ bucket-properties.yaml
 
 BucketName: PlaceholderBucketName
 Tags:
-- Key: Logging
-  Value: Enabled
+  - Key: Logging
+    Value: Enabled
 ```
 
 ```YAML
 MyS3Bucket:
-Type: AWS::S3::Bucket
-Properties:
-  CFNX::Include::HTTPTemplate:
-    - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-name.yaml
-    - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-properties.yaml
-  OtherProperty: value
+  Type: AWS::S3::Bucket
+  Properties:
+    CFNX::Include::HTTPTemplate:
+      - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-name.yaml
+      - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-properties.yaml
+    OtherProperty: value
 ```
 
 Result:
 ```YAML
 MyS3Bucket:
-Properties:
-  BucketName: MyBucket
-  Tags:
-    - Key: Logging
-      Value: Enabled
-  OtherProperty: Value
-Type: AWS::S3::Bucket
+  Properties:
+    BucketName: MyBucket
+    Tags:
+      - Key: Logging
+        Value: Enabled
+    OtherProperty: Value
+  Type: AWS::S3::Bucket
 ```
 
 [docs/samples/transform/includes/http_include_dict_merging_if_not_exists.yaml](/docs/samples/transform/includes/http_include_dict_merging_if_not_exists.yaml)
@@ -1287,28 +1281,28 @@ _NOTE: Available for Jinja template includes as well._
 bucket-tags.yaml
 
 Tags:
-- Key: Logging
-  Value: Disabled
+  - Key: Logging
+    Value: Disabled
 ```
 ```YAML
 MyS3Bucket:
-Type: AWS::S3::Bucket
-Properties:
-  CFNX::Include::HTTPTemplate:
-    - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-properties.yaml
-    -
-      Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-tags.yaml
-      MergeIntoPrevious: true
+  Type: AWS::S3::Bucket
+  Properties:
+    CFNX::Include::HTTPTemplate:
+      - Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-properties.yaml
+      -
+        Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-tags.yaml
+        MergeIntoPrevious: true
 ```
 Result:
 ```YAML
 MyS3Bucket:
-Properties:
-  BucketName: PlaceholderBucketName
-  Tags:
-    - Key: Logging
-      Value: Disabled
-Type: AWS::S3::Bucket
+  Properties:
+    BucketName: PlaceholderBucketName
+    Tags:
+      - Key: Logging
+        Value: Disabled
+  Type: AWS::S3::Bucket
 ```
 [docs/samples/transform/includes/http_include_dict_merging_overwrite.yaml](/docs/samples/transform/includes/http_include_dict_merging_overwrite.yaml)
 ```
@@ -1328,43 +1322,43 @@ The Context objects are used to provide data to Jinja templates for generating t
 ```YAML
 Transform: [CFNX]
 CFNXConfiguration:
-GlobalJinjaIncludeContext:
-  BucketNames: [MyDevBucket, MyStagingBucket, MyProductionBucket]
-  GlobalTags:
-    - Key: CreatedBy
-      Value: CFNX
+  GlobalJinjaIncludeContext:
+    BucketNames: [MyDevBucket, MyStagingBucket, MyProductionBucket]
+    GlobalTags:
+      - Key: CreatedBy
+        Value: CFNX
 Resources:
-CFNX::Include::JinjaTemplate:
-  Template: |
-    {% for i in BucketNames %}
-      {{i}}:
-        Type: AWS::S3::Bucket
-        Properties:
-          Tags:
-            {{ GlobalTags | tojson }}
-    {% endfor %}
+  CFNX::Include::JinjaTemplate:
+    Template: |
+      {% for i in BucketNames %}
+        {{i}}:
+          Type: AWS::S3::Bucket
+          Properties:
+            Tags:
+              {{ GlobalTags | tojson }}
+      {% endfor %}
 ```
 Result:
 ```YAML
 Resources:
-MyDevBucket:
-  Properties:
-    Tags:
-      - Key: CreatedBy
-        Value: CFNX
-  Type: AWS::S3::Bucket
-MyProductionBucket:
-  Properties:
-    Tags:
-      - Key: CreatedBy
-        Value: CFNX
-  Type: AWS::S3::Bucket
-MyStagingBucket:
-  Properties:
-    Tags:
-      - Key: CreatedBy
-        Value: CFNX
-  Type: AWS::S3::Bucket
+  MyDevBucket:
+    Properties:
+      Tags:
+        - Key: CreatedBy
+          Value: CFNX
+    Type: AWS::S3::Bucket
+  MyProductionBucket:
+    Properties:
+      Tags:
+        - Key: CreatedBy
+          Value: CFNX
+    Type: AWS::S3::Bucket
+  MyStagingBucket:
+    Properties:
+      Tags:
+        - Key: CreatedBy
+          Value: CFNX
+    Type: AWS::S3::Bucket
 ```
 [docs/samples/transform/includes/jinja_include.yaml](/docs/samples/transform/includes/jinja_include.yaml)
 ```
@@ -1375,18 +1369,18 @@ bash cfnxcmd transform-local -t docs/samples/transform/includes/jinja_include.ya
 
 ```YAML
 CFNX::Include::JinjaTemplate:
-OverrideContext:
-  GlobalTags:
-    - Key: CreatedBy
-      Value: Jinja
-Template: |
-  {% for i in BucketNames %}            # BucketNames come from global context
-    {{i}}:
-      Type: AWS::S3::Bucket
-      Properties:
-        Tags:
-          {{ GlobalTags | tojson }}     # Tags come from local context
-  {% endfor %}
+  OverrideContext:
+    GlobalTags:
+      - Key: CreatedBy
+        Value: Jinja
+  Template: |
+    {% for i in BucketNames %}            # BucketNames come from global context
+      {{i}}:
+        Type: AWS::S3::Bucket
+        Properties:
+          Tags:
+            {{ GlobalTags | tojson }}     # Tags come from local context
+    {% endfor %}
 ```
 
 * Similar to HTTP Includes you can chain Jinja Includes using a list
@@ -1395,34 +1389,34 @@ Template: |
 Transform: [CFNX]
 
 CFNXConfiguration:
-GlobalJinjaIncludeContext:
-  BucketNames: [MyDevBucket, MyStagingBucket, MyProductionBucket]
-  GlobalTags:
-    - Key: CreatedBy
-      Value: CFNX
+  GlobalJinjaIncludeContext:
+    BucketNames: [MyDevBucket, MyStagingBucket, MyProductionBucket]
+    GlobalTags:
+      - Key: CreatedBy
+        Value: CFNX
 
 Resources:
-CFNX::Include::JinjaTemplate:
-  -
-    Template: |
-      {% for i in BucketNames %}
-        {{i}}:
-          Type: AWS::S3::Bucket
-          Properties:
-            Tags:
-              {{ GlobalTags | tojson }}
-      {% endfor %}
-  -
-    OverrideContext:
-      BucketNames: [MyQABucket1, MyQABucket2]
-    Template: |
-      {% for i in BucketNames %}
-        {{i}}:
-          Type: AWS::S3::Bucket
-          Properties:
-            Tags:
-              {{ GlobalTags | tojson }}
-      {% endfor %}
+  CFNX::Include::JinjaTemplate:
+    -
+      Template: |
+        {% for i in BucketNames %}
+          {{i}}:
+            Type: AWS::S3::Bucket
+            Properties:
+              Tags:
+                {{ GlobalTags | tojson }}
+        {% endfor %}
+    -
+      OverrideContext:
+        BucketNames: [MyQABucket1, MyQABucket2]
+      Template: |
+        {% for i in BucketNames %}
+          {{i}}:
+            Type: AWS::S3::Bucket
+            Properties:
+              Tags:
+                {{ GlobalTags | tojson }}
+        {% endfor %}
 ```
 [docs/samples/transform/includes/jinja_include_multiple.yaml](/docs/samples/transform/includes/jinja_include_multiple.yaml)
 ```
@@ -1441,33 +1435,33 @@ __merge_into_tags__: Declare tags specific to the resource in override context a
 
 ```YAML
 CFNXConfiguration:
-GlobalJinjaIncludeContext:
-  GlobalTags:
-    - Key: Environment
-      Value: Non Production
-    - Key: Logging
-      Value: Enabled
+  GlobalJinjaIncludeContext:
+    GlobalTags:
+      - Key: Environment
+        Value: Non Production
+      - Key: Logging
+        Value: Enabled
 
 Resources:
-MyS3Bucket:
-  Type: AWS::S3::Bucket
-  Properties:
-    Tags:
-      CFNX::Include::JinjaTemplate:
-        OverrideContext:
-          ProductionTags:
-            - Key: Environment
-              Value: Production
-        Template: |
-            {{ ProductionTags | merge_into_tags(GlobalTags) | tojson }}
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        CFNX::Include::JinjaTemplate:
+          OverrideContext:
+            ProductionTags:
+              - Key: Environment
+                Value: Production
+          Template: |
+              {{ ProductionTags | merge_into_tags(GlobalTags) | tojson }}
 ```
 Resultant tags:
 ```YAML
 Tags:
-- Key: Environment
-  Value: Production       # Value used from Override Context
-- Key: Logging
-  Value: Enabled
+  - Key: Environment
+    Value: Production       # Value used from Override Context
+  - Key: Logging
+    Value: Enabled
 ```
 [docs/samples/transform/includes/jinja_include_merge_tags.yaml](/docs/samples/transform/includes/jinja_include_merge_tags.yaml)
 ```
@@ -1478,21 +1472,21 @@ __aws_tags__: Allows you to declare Key/Value object of Tags and the filter conv
 
 ```YAML
 CFNX::Include::JinjaTemplate:
-OverrideContext:
-  ProductionTags:
-    Environment: Production
-    Logging: Enabled
+  OverrideContext:
+    ProductionTags:
+      Environment: Production
+      Logging: Enabled
 
-Template: |
-    {{ ProductionTags | aws_tags | tojson }}
+  Template: |
+      {{ ProductionTags | aws_tags | tojson }}
 ```
 Resultant tags:
 ```YAML
 Tags:
-- Key: Environment
-  Value: Production
-- Key: Logging
-  Value: Enabled
+  - Key: Environment
+    Value: Production
+  - Key: Logging
+    Value: Enabled
 ```
 [docs/samples/transform/includes/jinja_include_aws_tags.yaml](/docs/samples/transform/includes/jinja_include_aws_tags.yaml)
 ```
@@ -1505,23 +1499,23 @@ __append_lists__: Allows you to add multiple lists and process them at once inst
 Transform: [CFNX]
 
 CFNXConfiguration:
-GlobalJinjaIncludeContext:
-  BusinessTags:
-    - Key: Business
-      Value: Cloudformation
-  LoggingTags:
-    - Key: Logging
-      Value: Enabled
+  GlobalJinjaIncludeContext:
+    BusinessTags:
+      - Key: Business
+        Value: Cloudformation
+    LoggingTags:
+      - Key: Logging
+        Value: Enabled
 ...
-  Properties:
-    Tags:
-      CFNX::Include::JinjaTemplate:
-        OverrideContext:
-          ProductionTags:
-            - Key: Environment
-              Value: Production
-        Template: |
-            {{ ProductionTags | append_lists(BusinessTags, LoggingTags) | tojson }}
+    Properties:
+      Tags:
+        CFNX::Include::JinjaTemplate:
+          OverrideContext:
+            ProductionTags:
+              - Key: Environment
+                Value: Production
+          Template: |
+              {{ ProductionTags | append_lists(BusinessTags, LoggingTags) | tojson }}
 ```
 
 [docs/samples/transform/includes/jinja_include_append_lists.yaml](/docs/samples/transform/includes/jinja_include_append_lists.yaml)
@@ -1534,12 +1528,12 @@ __until__ filter lets you generate range of numbers. Below template creates 10 S
 ```YAML
 Transform: [CFNX]
 Resources:
-CFNX::Include::JinjaTemplate:
-  Template: |
-    {% for i in 1 | until(10) %}
-      MyS3Bucket{{i}}:
-        Type: AWS::S3::Bucket
-    {% endfor %}
+  CFNX::Include::JinjaTemplate:
+    Template: |
+      {% for i in 1 | until(10) %}
+        MyS3Bucket{{i}}:
+          Type: AWS::S3::Bucket
+      {% endfor %}
 ```
 ```
 bash cfnxcmd transform-local -t docs/samples/transform/includes/jinja_include_until_function.yaml --account-id 999
@@ -1552,27 +1546,27 @@ For example, we download all resources for the template using HTTP, but change t
 ```YAML
 Transform: [CFNX]
 Resources:
-CFNX::Include::HTTPTemplate:
-  Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-roles-yaml
+  CFNX::Include::HTTPTemplate:
+    Location: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/iam-roles-yaml
 
-### Above includes RootRole, RolePolicies, RootInstanceProfile
-# We override RolePolicies to make it more strict for this stack
-CFNX::Include::JinjaTemplate:
-  Template: |
-    RolePolicies:
-      Type: "AWS::IAM::Policy"
-      Properties:
-        PolicyName: "root"
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
+  ### Above includes RootRole, RolePolicies, RootInstanceProfile
+  # We override RolePolicies to make it more strict for this stack
+  CFNX::Include::JinjaTemplate:
+    Template: |
+      RolePolicies:
+        Type: "AWS::IAM::Policy"
+        Properties:
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action: "ec2:describe*"
+                Resource: "*"
+          Roles:
             -
-              Effect: "Allow"
-              Action: "ec2:describe*"
-              Resource: "*"
-        Roles:
-          -
-            Ref: "RootRole"
+              Ref: "RootRole"
 ```
 [docs/samples/transform/includes/jinja_http_include_override_with_jinja.yaml](/docs/samples/transform/includes/jinja_http_include_override_with_jinja.yaml)
 ```
@@ -1607,29 +1601,29 @@ The below configuration, overrides __Resources__ block by applying rules in te l
 
 ```YAML
 CFNXConfiguration:
-FinalTemplateOverride:
-  Resources:  #--------> Section to override
-    -
-      ResourceTypes: ['AWS::S3::.*']
-      Apply:
-        DeletionPolicy: Retain
-    -
-      LogicalResourceIds: ['MyRDS.*', 'MyRedShift.*']
-      Apply:
-        DeletionPolicy: Snapshot
+  FinalTemplateOverride:
+    Resources:  #--------> Section to override
+      -
+        ResourceTypes: ['AWS::S3::.*']
+        Apply:
+          DeletionPolicy: Retain
+      -
+        LogicalResourceIds: ['MyRDS.*', 'MyRedShift.*']
+        Apply:
+          DeletionPolicy: Snapshot
 ```
 
 However, if an S3 bucket already has __DeletionPolicy: Delete__ for example, then it won't be touched. To force all Properties to match the rule use __Type: MERGE__
 
 ```YAML
 CFNXConfiguration:
-FinalTemplateOverride:
-  Resources:
-    -
-      Type: MERGE
-      ResourceTypes: ['AWS::S3::.*']
-      Apply:
-        DeletionPolicy: Retain
+  FinalTemplateOverride:
+    Resources:
+      -
+        Type: MERGE
+        ResourceTypes: ['AWS::S3::.*']
+        Apply:
+          DeletionPolicy: Retain
 ```
 
 You can control the behavior of how the properties are merged/overwritten using 3 different Types:
@@ -1644,18 +1638,18 @@ For example, below configuration will overwrite entire __Properties/Tags__, __De
 
 ```YAML
 CFNXConfiguration:
-FinalTemplateOverride:
-  Resources:
-    -
-      Type: OVERWRITE
-        LogicalResourceIds: ['MyAutoScaling.*']
-        Apply:
-          Properties/Tags:
-              - Key: OnlyOneTag
-                Value: overwritten
-          DeletionPolicy: Retain
-          UpdatePolicy/AutoScalingReplacingUpdate:
-            WillReplace: true
+  FinalTemplateOverride:
+    Resources:
+      -
+        Type: OVERWRITE
+          LogicalResourceIds: ['MyAutoScaling.*']
+          Apply:
+            Properties/Tags:
+                - Key: OnlyOneTag
+                  Value: overwritten
+            DeletionPolicy: Retain
+            UpdatePolicy/AutoScalingReplacingUpdate:
+              WillReplace: true
 ```
 
 Apart from __ResourceTypes__ and __LogicalResourceIds__ we can also add further filtering using __Conditions__. Conditions are applied to resources that match other two properties only.
@@ -1666,19 +1660,19 @@ For example, the below rule, applies to all RDS instances, who have a tag __Envi
 Type: OVERWRITE
 ResourceTypes: ['AWS::RDS::DBInstance']
 Conditions:
-HasProductionTag: ['.Properties.Tags[] | select(.Key=="Environment") | .Value', 'eq', 'Production']
+  HasProductionTag: ['.Properties.Tags[] | select(.Key=="Environment") | .Value', 'eq', 'Production']
 Apply:
-DeletionPolicy: Snapshot
+  DeletionPolicy: Snapshot
 ```
 * Overwriting non Resource Blocks does not support any filters. It supports __Type__ property which can be configured. For example you can override __Outputs__ section as follows:
 
 ```YAML
 FinalTemplateOverride:
-Outputs:
-  -
-    Apply:
-      NewOutput:
-        Value: $[MACRO::RandomUUID]
+  Outputs:
+    -
+      Apply:
+        NewOutput:
+          Value: $[MACRO::RandomUUID]
 ```
 
 [docs/samples/transform/cfnx_configuration/override-sections.yaml](/docs/samples/transform/cfnx_configuration/override-sections.yaml)
@@ -1686,7 +1680,7 @@ Outputs:
 bash cfnxcmd transform-local -t docs/samples/transform/cfnx_configuration/override-sections.yaml
 ```
 
-<a name="InitialTemplateOverride"></a>
+<a name="FinalTemplateOverride"></a>
 ## InitialTemplateOverride
 
 _(For Advanced use cases)_
@@ -1704,8 +1698,8 @@ Eg:
 - Call CFNX first to resolve template functions variables and other features
 - Call AWS::Serverless-2016-10-31 to create lambda resource definitions
 - Call CFNX to add
-- [CFNXPostExecuteDelay](#CFNXPostExecuteDelay) runtime property to add 10 seconds delay after updates to IAM policies generated by SAM
-- Also add __DeletionPolicy__ as Retain to all Lambda resources, by passing YAML config to __FinalTemplateOverride__.
+  - [CFNXPostExecuteDelay](#CFNXPostExecuteDelay) runtime property to add 10 seconds delay after updates to IAM policies generated by SAM
+  - Also add __DeletionPolicy__ as Retain to all Lambda resources, by passing YAML config to __FinalTemplateOverride__.
 
 Here is the flow:
 
@@ -1718,33 +1712,33 @@ You can similarly configure any CFNX configuration for that run.
 ```YAML
 
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
-- Name: AWS::Serverless-2016-10-31
-- Name: CFNX
-  Parameters:
-    InitialTemplateOverride: |
-      Resources:
-        -
-          ResourceTypes: ["AWS::IAM::Policy"]
-          Apply:
-            CFNXPostExecuteDelay: 10
-    FinalTemplateOverride: |
-      Resources:
-        -
-          ResourceTypes: ["AWS::Lambda::*"]
-          Apply:
-            DeletionPolicy: Retain
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
+  - Name: AWS::Serverless-2016-10-31
+  - Name: CFNX
+    Parameters:
+      InitialTemplateOverride: |
+        Resources:
+          -
+            ResourceTypes: ["AWS::IAM::Policy"]
+            Apply:
+              CFNXPostExecuteDelay: 10
+      FinalTemplateOverride: |
+        Resources:
+          -
+            ResourceTypes: ["AWS::Lambda::*"]
+            Apply:
+              DeletionPolicy: Retain
 Resources:
-HelloWorldFunction:
-  Type: AWS::Serverless::Function
-  Properties:
-    FunctionName: mylambda-$[MACRO::StackSHASUM]
-    Handler: index.handler
-    Runtime:
-      FnX::Python: return 'python2.7'
-    CodeUri: hello_world_lambda
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mylambda-$[MACRO::StackSHASUM]
+      Handler: index.handler
+      Runtime:
+        FnX::Python: return 'python2.7'
+      CodeUri: hello_world_lambda
 ```
 
 <a name="StackLevelProperties"></a>
@@ -1756,11 +1750,11 @@ __CFNXConfiguration__ provides certain properties that can be applied at stack l
 ## Enable Template Backups
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 CFNXConfiguration:
-EnableTemplateBackups: true
+  EnableTemplateBackups: true
 Resources:
 ...
 ```
@@ -1784,11 +1778,11 @@ Specially in CI/CD integration where builds run from multiple sources and get de
 
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 CFNXConfiguration:
-EnableNOOPUpdates: true
+  EnableNOOPUpdates: true
 Resources:
 ... NO CHANGES ...
 ```
@@ -1808,12 +1802,12 @@ You can run the above "deploy" command multiple times with no changes to templat
 
 Cloudformation supports [stack creation timeout](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html#Timeout). However, if you want to set timeouts on Stack Updates, you can configure this:
 
-**Max Timeout allowed is 2500 seconds**
+**Max Timeout allowed is 3500 seconds**
 
 ```YAML
 Transform: [CFNX]
 CFNXConfiguration:
-SetStackUpdateTimeout: 10
+  SetStackUpdateTimeout: 10
 Resources:
 ...
 ```
@@ -1834,9 +1828,9 @@ When you have multiple resources created/updated in a stack you might have to co
 ```YAML
 Transform: [CFNX]
 CFNXConfiguration:
-ConcurrencyControl: true
+  ConcurrencyControl: true
 Resources:
-...
+  ...
 ```
 
 The default configuration of __true__ will ensure that no more than __MaxConcurrency__ (Default: 5) number of resources of the same ResourceType can execute in parallel. This means, not more than 5 S3 resources, or more than 5 IAM resource etc can be in IN_PROGRESS state at once.
@@ -1844,8 +1838,6 @@ The default configuration of __true__ will ensure that no more than __MaxConcurr
 __How this works__
 ---
 CFNX groups resources of same type (AWS::S3, AWS::IAM, Custom::) and batches them into multiple groups based on __MaxConcurrency__.
-
-**ConcurrencyControl calculates the final dependencies based on already existing dependencies**
 
 - Say __Group1__ has 5 resources IAMR1, IAMR2, IAMR3, IAMR4, IAMR5.
 - All resources in __Group2__ are made dependent on one of the randomly selected __Group1__ resources, say __R3__. To make __Group2__ dependent on all IAMR1-IAMR5 resources, use __StrictConcurrency: true__ in configuration (see below). However, it is not recommended to use strict concurrency when you have huge number of resources in the template as it increases the total execution time by considerable amount.
@@ -1855,7 +1847,9 @@ CFNX groups resources of same type (AWS::S3, AWS::IAM, Custom::) and batches the
 
 _Note: ConcurrencyControl only limits the maximum concurrency and does not ensure minimum concurrency of any value_
 
-**When using CLI to run transforms you are provided with an option to print the execution order post dependency processing for you to verify**
+**ConcurrencyControl does not interfere with existing dependencies. It groups resources based on existing dependencies and only batches them if they fall in the same level of execution**
+
+**Use transform-local to test the templates. CLI provides an option to display Execution Order while transforming templates locally**
 
 [docs/samples/transform/cfnx_configuration/concurrency-control.yaml](/docs/samples/transform/cfnx_configuration/concurrency-control.yaml)
 ```
@@ -1868,11 +1862,11 @@ The above deployment will create 20 SSM parameters with maximum concurrency of 5
 
 ```YAML
 CFNXConfiguration:
-ConcurrencyControl:
-  MaxConcurrency: 2             # --> Maximum parallel executions
-  NameSpaces: ['AWS::SSM']      # --> Apply to only selected namespaces
-  StrictConcurrency: True       # ---> Make every group dependent on every resource in previous group
-  EnableNamespaceGrouping: False # ---> Disable namespace group and consider all resources as part of same namespace
+  ConcurrencyControl:
+    MaxConcurrency: 2             # --> Maximum parallel executions
+    NameSpaces: ['AWS::SSM']      # --> Apply to only selected namespaces
+    StrictConcurrency: True       # ---> Make every group dependent on every resource in previous group
+    EnableNamespaceGrouping: False # ---> Disable namespace group and consider all resources as part of same namespace
 ```
 
 <a name="TemplateValidations"></a>
@@ -1888,11 +1882,11 @@ Generic Syntax:
 
 ```YAML
 CFNXConfiguration:
-PreValidations:
-  ValidateStorageConfiguration:
-    Conditions:
-      EnsureSizeNotReduced: [$[PARAM::StorageSize], 'ge', $[OLDPARAM::StorageSize]]
-      EnsureTypeNotChanged: [$[PARAM::StorageType], 'eq', $[OLDPARAM::StorateType]]
+  PreValidations:
+    ValidateStorageConfiguration:
+      Conditions:
+        EnsureSizeNotReduced: [$[PARAM::StorageSize], 'ge', $[OLDPARAM::StorageSize]]
+        EnsureTypeNotChanged: [$[PARAM::StorageType], 'eq', $[OLDPARAM::StorateType]]
 ```
 
 All the Validations should be successful for processing to proceed further.
@@ -1904,12 +1898,12 @@ Every Validation group takes a set of __Conditions__ all of which should evaluat
 
 ```YAML
 CFNXConfiguration:
-PreValidations:
-  ValidateStorageConfiguration:
-    Conditions:
-      SizeReduced: [$[PARAM::StorageSize], 'lt', $[OLDPARAM::StorageSize]]
-      TypeChanged: [$[PARAM::StorageType], 'ne', $[OLDPARAM::StorateType]]
-    MasterCondition: NOT SizeReduced AND NOT TypeChanged
+  PreValidations:
+    ValidateStorageConfiguration:
+      Conditions:
+        SizeReduced: [$[PARAM::StorageSize], 'lt', $[OLDPARAM::StorageSize]]
+        TypeChanged: [$[PARAM::StorageType], 'ne', $[OLDPARAM::StorateType]]
+      MasterCondition: NOT SizeReduced AND NOT TypeChanged
 ```
 
 Reference to further details on configuring complex [Conditions](#Conditions)
@@ -1923,13 +1917,13 @@ Post validations are similar to Pre Validations, just that they are executed aft
 
 ```YAML
 CFNXConfiguration:
-PostValidations:
-  ValidateStorageConfiguration:
-    Conditions:
-      EnsureCorrectAZ:
-        - FnX::Template: .Resources.ProductionDatabase.DeletionPolicy
-        - 'eq'
-        - 'Retain'
+  PostValidations:
+    ValidateStorageConfiguration:
+      Conditions:
+        EnsureCorrectAZ:
+          - FnX::Template: .Resources.ProductionDatabase.DeletionPolicy
+          - 'eq'
+          - 'Retain'
 ```
 [docs/samples/transform/cfnx_configuration/post-template-validations.yaml](/docs/samples/transform/cfnx_configuration/post-template-validations.yaml)
 ```
@@ -1946,15 +1940,15 @@ Resource level properties add custom resources to the template which gets execut
 <a name="CFNXTimeout"></a>
 ## Resource Timeouts
 
-You can configure create/update timeouts on a per resource basis using __CFNXTimeout__. Maximum allowed timeout is 2500 seconds.
+You can configure create/update timeouts on a per resource basis using __CFNXTimeout__. Maximum allowed timeout is 3500 seconds.
 
 ```YAML
 Transform: [CFNX]
 Resources:
-MyS3Bucket:
-  CFNXTimeout: 10
-  Type: AWS::S3::Bucket
-  ...
+  MyS3Bucket:
+    CFNXTimeout: 10
+    Type: AWS::S3::Bucket
+    ...
 ```
 
 [docs/samples/transform/resource_properties/set-timeout.yaml](/docs/samples/transform/resource_properties/set-timeout.yaml)
@@ -1972,12 +1966,12 @@ You can configure sleep delays post resource create/update using __CFNXPostExecu
 ```YAML
 Transform: [CFNX]
 Resources:
-MyS3Bucket:
-  CFNXPostExecuteDelay: 10
-  Type: AWS::S3::Bucket
-MyS3Bucket2:
-  DependsOn: MyS3Bucket
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    CFNXPostExecuteDelay: 10
+    Type: AWS::S3::Bucket
+  MyS3Bucket2:
+    DependsOn: MyS3Bucket
+    Type: AWS::S3::Bucket
 ```
 
 In the above sample __MyS3Bucket2__ waits for 10 seconds after __MyS3Bucket__ is created or updated. If __MyS3Bucket__ is not updated, the delay is not introduced.
@@ -1997,8 +1991,8 @@ aws cloudformation deploy --template-file docs/samples/transform/resource_proper
 
 ```YAML
 ProductionS3Bucket:
-CFNXDependsOn: [MyS3Bucket.+, cross-stack-name/MyS3Bucket]
-Type: AWS::S3::Bucket
+  CFNXDependsOn: [MyS3Bucket.+, cross-stack-name/MyS3Bucket]
+  Type: AWS::S3::Bucket
 ```
 Above configuration makes __ProductionS3Bucket__ depend on all buckets matching __MyS3BUcket.+__ in the same stack and also on __MyS3Bucket__ in stack __cross-stack-name__.
 
@@ -2015,12 +2009,12 @@ Helps in protecting resource properties from accidental updates. Also, serves as
 
 ```YAML
 MyEc2Volume:
-CFNXProtectPropertiesFromUpdate: ["Size", "VolumeType"]
-Type: AWS::EC2::Volume
-Properties:
-  Size: 10
-  VolumeType: gp2
-  AvailabilityZone: ap-southeast-2a
+  CFNXProtectPropertiesFromUpdate: ["Size", "VolumeType"]
+  Type: AWS::EC2::Volume
+  Properties:
+    Size: 10
+    VolumeType: gp2
+    AvailabilityZone: ap-southeast-2a
 ```
 
 Above configuration ensures that _Size_ and _VolumeType_ are not changed for the resource. If you have to change those, remove those properties from __CFNXProtectPropertiesFromUpdate__ and then update the stack.
@@ -2029,13 +2023,13 @@ You can also specify properties in deeper levels using '/' separated property pa
 
 ```YAML
 MyS3Bucket:
-CFNXProtectPropertiesFromUpdate: ["BucketEncryption/ServerSideEncryptionConfiguration"]
-Type: AWS::S3::Bucket
-Properties:
-  BucketEncryption:
-    ServerSideEncryptionConfiguration:
-      - ServerSideEncryptionByDefault:
-          SSEAlgorithm: aws:kms
+  CFNXProtectPropertiesFromUpdate: ["BucketEncryption/ServerSideEncryptionConfiguration"]
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketEncryption:
+      ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: aws:kms
 ```
 
 [docs/samples/transform/resource_properties/protect-properties.yaml](/docs/samples/transform/resource_properties/protect-properties.yaml)
@@ -2049,23 +2043,16 @@ aws cloudformation deploy --template-file docs/samples/transform/resource_proper
 ## Auto add attributes to Outputs
 ```YAML
 MyS3Bucket:
-CFNXOutputAttributes: true # all attributes and Refs
-Type: AWS::S3::Bucket
+  CFNXOutputAttributes: true # all attributes and Refs
+  Type: AWS::S3::Bucket
 ```
 
 Above configuration will add all attributes and refs that are allowed on the resource to the outputs section of the template. If you choose to add only specific attributes or Ref use below config:
 
 ```YAML
 MyS3Bucket2:
-CFNXOutputAttributes: ['Arn', 'Ref'] # only few attributes
-Type: AWS::S3::Bucket
-```
-
-[docs/samples/transform/resource_properties/output-attributes.yaml](/docs/samples/transform/resource_properties/output-attributes.yaml)
-```
-bash cfnxcmd transform-local -t docs/samples/transform/resource_properties/output-attributes.yaml
-
-aws cloudformation deploy --template-file docs/samples/transform/resource_properties/output-attributes.yaml --stack-name output-attributes-yaml-1
+  CFNXOutputAttributes: ['Arn', 'Ref'] # only few attributes
+  Type: AWS::S3::Bucket
 ```
 
 <a name="CFNXEnsureLatency"></a>
@@ -2075,10 +2062,10 @@ Though you are not restricted to use this on any logical resource, it makes sens
 
 ```YAML
 MyECSService:
-CFNXEnsureLatency:
-  Url: http://production.endpoint.net/status
-  MaxLatency: 0.1 # seconds
-Type: AWS::ECS::Service
+  CFNXEnsureLatency:
+    Url: http://production.endpoint.net/status
+    MaxLatency: 0.1 # seconds
+  Type: AWS::ECS::Service
 ```
 
 Every time the ECS service is updated, the production endpoint latency is ensured to be < 0.1 seconds. You can configure the behavior using below properties.
@@ -2088,7 +2075,7 @@ Other Configurable options are:
 __NumOfConsecutiveResults__: (Default: 30) Number of consecutive attempts that should result in desired latency
 __NumOfSuccessConsecutiveResults__: (Default: 30) number of success consecutive results
 __NumOfFailureConsecutiveResults__: (Default: 30) number of failure consecutive results
-__TotalTimeout__: (Default: 900) Max configurable timeout is 2500 seconds
+__TotalTimeout__: (Default: 900) Max configurable timeout is 3500 seconds
 
 [docs/samples/transform/resource_properties/ensure-latency.yaml](/docs/samples/transform/resource_properties/ensure-latency.yaml)
 ```
@@ -2097,7 +2084,7 @@ bash cfnxcmd transform-local -t docs/samples/transform/resource_properties/ensur
 aws cloudformation deploy --template-file docs/samples/transform/resource_properties/ensure-latency.yaml --stack-name ensure-latency-yaml-1
 ```
 
-<a name="CFNXReplacementPolicy"></a>
+<a name="ReplacementPolicy"></a>
 ## Replacement Policy
 
 __CFNXReplacementPolicy__ is similar to [DeletionPolicy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-deletionpolicy.html) but it allows you to take snapshots of resources while performing Replacement Updates. DeletionPolicy does not support this during Replacement Updates.
@@ -2107,31 +2094,31 @@ Replacement Policy allows you to set only 1 value and that is __snapshot__, othe
 **You cannot use dynamic names when using Replacement Policy as Replacement Policy requires you to provide the resource name without using any references**. This is because Replacement Policy resource is triggered before the resource is updated and hence it cannot reference the resource itself.
 
 ```YAML
-MyRDSCluster:
-  CFNXReplacementPolicy:         # <-- Set replacement policy
-    Type: snapshot
-    DBClusterIdentifier:
-      Ref: DBClusterIdentifier   # <--- Pass DB Cluster Identifier
-  Type: AWS::RDS::DBCluster
-  Properties:
-    ...
+  MyRDSCluster:
+    CFNXReplacementPolicy:         # <-- Set replacement policy
+      Type: snapshot
+      DBClusterIdentifier:
+        Ref: DBClusterIdentifier   # <--- Pass DB Cluster Identifier
+    Type: AWS::RDS::DBCluster
+    Properties:
+      ...
 ```
 
 Supported resources are:
 
-* _AWS::RDS::DBInstance_: Required Property: __DBInstanceIdentifier__
+  * _AWS::RDS::DBInstance_: Required Property: __DBInstanceIdentifier__
 [docs/samples/transform/resource_properties/replacement-policy-rds-dbinstance.yaml](/docs/samples/transform/resource_properties/replacement-policy-rds-dbinstance.yaml)
 
-* _AWS::RDS::DBCluster_: Required Property: __DBClusterIdentifier__
+  * _AWS::RDS::DBCluster_: Required Property: __DBClusterIdentifier__
 [docs/samples/transform/resource_properties/replacement-policy-rds-dbcluster.yaml](/docs/samples/transform/resource_properties/replacement-policy-rds-dbcluster.yaml)
 
-* _AWS::Redshift::Cluster_: Required Property: __ClusterIdentifier__
-[docs/samples/transform/resource_properties/replacement-policy-redshift-cluster.yaml](/docs/samples/transform/resource_properties/replacement-policy-redshift-cluster.yaml)
+  * _AWS::Redshift::Cluster_: Required Property: __ClusterIdentifier__
+  [docs/samples/transform/resource_properties/replacement-policy-redshift-cluster.yaml](/docs/samples/transform/resource_properties/replacement-policy-redshift-cluster.yaml)
 
-* _AWS::ElastiCache::ReplicationGroup_: Required Property: __ReplicationGroupId__
+  * _AWS::ElastiCache::ReplicationGroup_: Required Property: __ReplicationGroupId__
 [docs/samples/transform/resource_properties/replacement-policy-elasticcache-replication-group.yaml](/docs/samples/transform/resource_properties/replacement-policy-elasticcache-replication-group.yaml)
 
-* _AWS::ElastiCache::CacheCluster_: Required Property: __CacheClusterId__
+  * _AWS::ElastiCache::CacheCluster_: Required Property: __CacheClusterId__
 [docs/samples/transform/resource_properties/replacement-policy-replacement-policy-elasticcache.yaml](/docs/samples/transform/resource_properties/replacement-policy-replacement-policy-elasticcache.yaml)
 
 <a name="CFNXSuccessActions"></a>
@@ -2145,12 +2132,12 @@ For example if you want to send an SMS after every successful update to S3 Bucke
 
 ```YAML
 MyS3Bucket:
-CFNXSuccessActions:
-  - Api: sns/publish
-    Arguments:
-      PhoneNumber: '+61435014009'
-      Message: !Sub Production S3 Bucket '${MyS3Bucket}' Update Succeeded at - $[MACRO::DateTime]
-Type: AWS::S3::Bucket
+  CFNXSuccessActions:
+    - Api: sns/publish
+      Arguments:
+        PhoneNumber: '+61435014009'
+        Message: !Sub Production S3 Bucket '${MyS3Bucket}' Update Succeeded at - $[MACRO::DateTime]
+  Type: AWS::S3::Bucket
 ```
 
 As you can see we can refer to the Bucket logical ID in the success actions, as Success actions are executed post resource create/update. It is invalid to do the same for [Failure Actions](#CFNXFailureActions).
@@ -2159,13 +2146,13 @@ Making HTTP Api calls on success
 
 ```YAML
 MyS3Bucket:
-CFNXSuccessActions:
-  - ServiceType: HTTP
-    Api: http://internal.updatetracker.net/status/update
-    Method: POST
-    Arguments: # Passed in data
-      Message: Production S3 Bucket Update Succeeded at - $[MACRO::DateTime]
-Type: AWS::S3::Bucket
+  CFNXSuccessActions:
+    - ServiceType: HTTP
+      Api: http://internal.updatetracker.net/status/update
+      Method: POST
+      Arguments: # Passed in data
+        Message: Production S3 Bucket Update Succeeded at - $[MACRO::DateTime]
+  Type: AWS::S3::Bucket
 ```
 
 _NOTE: IT IS NOT VALID TO REFERENCE THE SAME RESOURCE IN FAILURE ACTIONS (unlike CFNXSuccessActions)._. However, you can reference other resources or parameters.
@@ -2181,11 +2168,11 @@ Running Python scripts on success
 
 ```YAML
 MyS3Bucket:
-CFNXSuccessActions:
-  - ServiceType: ScriptExecutor
-    Api: |
-      print "Success"
-Type: AWS::S3::Bucket
+  CFNXSuccessActions:
+    - ServiceType: ScriptExecutor
+      Api: |
+        print "Success"
+  Type: AWS::S3::Bucket
 ```
 
 [docs/samples/transform/resource_properties/success-failure-actions-script.yaml](/docs/samples/transform/resource_properties/success-failure-actions-script.yaml)
@@ -2204,11 +2191,11 @@ Similar to [Success Actions](#CFNXSuccessActions) you can run failure actions us
 
 ```YAML
 CFNXFailureActions:
-- Service: sns
-  Api: publish
-  Arguments:
-    PhoneNumber: '+61438499846'
-    Message: Production S3 Bucket Update Failed at - $[MACRO::DateTime]
+  - Service: sns
+    Api: publish
+    Arguments:
+      PhoneNumber: '+61438499846'
+      Message: Production S3 Bucket Update Failed at - $[MACRO::DateTime]
 ```
 
 You can similarly run HTTP and Scripts as well. See [Success Actions](#CFNXSuccessActions) for usage and samples.
@@ -2239,27 +2226,27 @@ Pre Validations are run only if the Resource it references (__MyS3Resource__) to
 
 ```YAML
 CFNXPreValidations:
-Validation1:
-  Conditions:
-    Condition1:
-    Condition2:
-    ...
-  MasterCondition: (Optional)
-Validation2: ...
+  Validation1:
+    Conditions:
+      Condition1:
+      Condition2:
+      ...
+    MasterCondition: (Optional)
+  Validation2: ...
 MyS3Resource:
-Type: AWS::S3::Bucket
+  Type: AWS::S3::Bucket
 ```
 
-* You can provide data to validation conditions using any intrinsic / macro functions.
+  * You can provide data to validation conditions using any intrinsic / macro functions.
 
 ```YAML
 MyCFNResource:
-Type: AWS::S3::Bucket
-CFNXPreValidations:
-  Validations:
-    EnsureNoUpdate:
-      Conditions:
-        Condition1: [ '$[MACRO::StackStatus]', 'memberof', ['CREATE_IN_PROGRESS', 'DELETE_IN_PROGRESS'] ]
+  Type: AWS::S3::Bucket
+  CFNXPreValidations:
+    Validations:
+      EnsureNoUpdate:
+        Conditions:
+          Condition1: [ '$[MACRO::StackStatus]', 'memberof', ['CREATE_IN_PROGRESS', 'DELETE_IN_PROGRESS'] ]
 ```
 [docs/samples/transform/resource_properties/pre-validations-simple.yaml](/docs/samples/transform/resource_properties/pre-validations-simple.yaml)
 ```
@@ -2270,7 +2257,7 @@ aws cloudformation deploy --template-file docs/samples/transform/resource_proper
 
 The above validation ensures that you can create the Resource and Delete the stack, but not Update or Delete the resource itself from the stack.
 
-* You can download data from [runtime input stores](#RuntimeInputStores) and pass it to Validations. Runtime Input Stores are different from Global Input Stores, as they are downloaded during the stack execution.
+  * You can download data from [runtime input stores](#RuntimeInputStores) and pass it to Validations. Runtime Input Stores are different from Global Input Stores, as they are downloaded during the stack execution.
 
 For example:
 
@@ -2282,62 +2269,62 @@ For example:
 
 You can reference other resources in the template using __Ref__ and __GetAtt__. _Referencing the same resource will cause circular dependency for this property_.
 
-* **Scenario1:** Create a Cloudwatch Alarm monitoring database connections and Auto scaling group in the same template. Every time the ASG properties are changed, run pre validation to ensure the cloudwatch alarm is not in active state. Update to ASG is not even triggered if the condition is not met.
+  * **Scenario1:** Create a Cloudwatch Alarm monitoring database connections and Auto scaling group in the same template. Every time the ASG properties are changed, run pre validation to ensure the cloudwatch alarm is not in active state. Update to ASG is not even triggered if the condition is not met.
 
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 
 Parameters:
-MyImageId:
-  Type: AWS::SSM::Parameter::Value<String>
-  Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+  MyImageId:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 
 Resources:
-CloudwatchAlarm:
-  Type: "AWS::CloudWatch::Alarm"
-  Properties:
-    ComparisonOperator: GreaterThanOrEqualToThreshold
-    EvaluationPeriods: 3
-    MetricName: DatabaseConnections
-    Namespace: AWS/RDS
-    Period: 60
-    Statistic: Average
-    Threshold: 50
+  CloudwatchAlarm:
+    Type: "AWS::CloudWatch::Alarm"
+    Properties:
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 3
+      MetricName: DatabaseConnections
+      Namespace: AWS/RDS
+      Period: 60
+      Statistic: Average
+      Threshold: 50
 
-ASLC:
-  Type: AWS::AutoScaling::LaunchConfiguration
-  Properties:
-    ImageId: !Ref MyImageId
-    SecurityGroups: ['default']
-    InstanceType: m1.small
+  ASLC:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      ImageId: !Ref MyImageId
+      SecurityGroups: ['default']
+      InstanceType: m1.small
 
-ASG1:
-  CFNXPreValidations:
-    Boto3InputStores:
-      Stores:
-        AlarmStore:
-          - cloudwatch/describe_alarms
-          - AlarmNames:
-            - !Ref CloudwatchAlarm
-    Validations:
-      EnsureAlarmHealthy:
-        Conditions:
-          StateOK:
-            - FnX::Boto3Store: .AlarmStore.MetricAlarms[0].StateValue
-            - eq
-            - OK
-  Type: "AWS::AutoScaling::AutoScalingGroup"
-  Properties:
-    AvailabilityZones:
-      Fn::GetAZs:
-        Ref: "AWS::Region"
-    LaunchConfigurationName:
-      Ref: "ASLC"
-    MaxSize: "3"
-    MinSize: "2"
+  ASG1:
+    CFNXPreValidations:
+      Boto3InputStores:
+        Stores:
+          AlarmStore:
+            - cloudwatch/describe_alarms
+            - AlarmNames:
+              - !Ref CloudwatchAlarm
+      Validations:
+        EnsureAlarmHealthy:
+          Conditions:
+            StateOK:
+              - FnX::Boto3Store: .AlarmStore.MetricAlarms[0].StateValue
+              - eq
+              - OK
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Properties:
+      AvailabilityZones:
+        Fn::GetAZs:
+          Ref: "AWS::Region"
+      LaunchConfigurationName:
+        Ref: "ASLC"
+      MaxSize: "3"
+      MinSize: "2"
 ```
 
 [docs/samples/transform/resource_properties/pre-validations-refs.yaml](/docs/samples/transform/resource_properties/pre-validations-refs.yaml)
@@ -2347,68 +2334,68 @@ bash cfnxcmd transform-local -t docs/samples/transform/resource_properties/pre-v
 aws cloudformation deploy --template-file docs/samples/transform/resource_properties/pre-validations-refs.yaml --stack-name pre-validations-refs-yaml-1
 ```
 
-* **Scenario2:** Ensure that there are no active outages by monitoring an internal service endpoint, and also make sure that it is not a Weekday or active Business hours before updating an S3 bucket. See [Configuring VPC Access](#ConfiguringVPCAccess) if you need to work with internal services.
+  * **Scenario2:** Ensure that there are no active outages by monitoring an internal service endpoint, and also make sure that it is not a Weekday or active Business hours before updating an S3 bucket. See [Configuring VPC Access](#ConfiguringVPCAccess) if you need to work with internal services.
 
 ```YAML
 Transform: [CFNX]
 
 Resources:
-MyS3Bucket:
-  CFNXPreValidations:
-    HTTPInputStores:
-      Stores:
-        ProductionStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/production-health.json
-    Validations:
-      CheckOutages:
-        Conditions:
-          EnsureNoOutages:
-            - FnX::HTTPStore: .ProductionStore.RESPONSE.active_outages_num
-            - eq
-            - 0
-      CheckBusinessHours:
-        Conditions:
-          IsNonBusinessHours:
-            -
-              FnX::Python: |
-                from datetime import datetime
-                return datetime.now().hour not in range(9, 17)
-            - 'eq'
-            - True
-          IsWeekend:
-            -
-              FnX::Python: |
-                from datetime import datetime
-                return datetime.today().weekday()
-            - 'memberof'
-            - [5, 6]
-        MasterCondition: IsNonBusinessHours AND IsWeekend
-        # Master condition is Optional and by default is AND or all conditions
-  Type: AWS::S3::Bucket
+  MyS3Bucket:
+    CFNXPreValidations:
+      HTTPInputStores:
+        Stores:
+          ProductionStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/production-health.json
+      Validations:
+        CheckOutages:
+          Conditions:
+            EnsureNoOutages:
+              - FnX::HTTPStore: .ProductionStore.RESPONSE.active_outages_num
+              - eq
+              - 0
+        CheckBusinessHours:
+          Conditions:
+            IsNonBusinessHours:
+              -
+                FnX::Python: |
+                  from datetime import datetime
+                  return datetime.now().hour not in range(9, 17)
+              - 'eq'
+              - True
+            IsWeekend:
+              -
+                FnX::Python: |
+                  from datetime import datetime
+                  return datetime.today().weekday()
+              - 'memberof'
+              - [5, 6]
+          MasterCondition: IsNonBusinessHours AND IsWeekend
+          # Master condition is Optional and by default is AND or all conditions
+    Type: AWS::S3::Bucket
 ```
 
-__CFNXPreValidations__ allows you to also specify an addition __Api__ to work with in the same Configuration. This allows for passing data from InputStores to Api to make further API calls before final Validations.
+  __CFNXPreValidations__ allows you to also specify an addition __Api__ to work with in the same Configuration. This allows for passing data from InputStores to Api to make further API calls before final Validations.
 
-* **Scenario3**: Read the DynamoDB table name from a HTTP config service, pass it to the Api to get the status of the DynamoDB table, and ensure DynamoDB table is in valid state before creating/updating an S3 Bucket.
+  * **Scenario3**: Read the DynamoDB table name from a HTTP config service, pass it to the Api to get the status of the DynamoDB table, and ensure DynamoDB table is in valid state before creating/updating an S3 Bucket.
 
 ```YAML
 MyS3Bucket:
-Type: AWS::S3::Bucket
-CFNXPreValidations:
-  # Get production configuration object
-  HTTPInputStores:
-    Stores:
-      ProductionConfig: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/config-service.json
-  # Get table status
-  Api: dynamodb/describe_table
-  Arguments:
-    TableName:
-      FnX::HTTPStore: .ProductionConfig.RESPONSE.ProductionTable
-  # Validate subscription is confirmed
-  Validations:
-    SubStatus:
-      Conditions:
-        01-Status200: ['Resp::.ResponseMetadata.HTTPStatusCode', 'eq', 200]
-        02-SubConfirmed: ['Resp::.Table.TableStatus', 'eq', 'ACTIVE']
+  Type: AWS::S3::Bucket
+  CFNXPreValidations:
+    # Get production configuration object
+    HTTPInputStores:
+      Stores:
+        ProductionConfig: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/config-service.json
+    # Get table status
+    Api: dynamodb/describe_table
+    Arguments:
+      TableName:
+        FnX::HTTPStore: .ProductionConfig.RESPONSE.ProductionTable
+    # Validate subscription is confirmed
+    Validations:
+      SubStatus:
+        Conditions:
+          01-Status200: ['Resp::.ResponseMetadata.HTTPStatusCode', 'eq', 200]
+          02-SubConfirmed: ['Resp::.Table.TableStatus', 'eq', 'ACTIVE']
 ```
 
 <a name="CFNXPostValidations"></a>
@@ -2425,57 +2412,57 @@ Post Validations are run only if the Resource it references (__MyS3Resource__) t
 
 ```YAML
 CFNXPostValidations:
-Validation1:
-  Conditions:
-    Condition1:
-      - !Ref MyS3Resource
+  Validation1:
+    Conditions:
+      Condition1:
+        - !Ref MyS3Resource
+        ...
+      Condition2:
       ...
-    Condition2:
-    ...
-  MasterCondition: (Optional)
-Validation2: ...
+    MasterCondition: (Optional)
+  Validation2: ...
 MyS3Resource:
-Type: AWS::S3::Bucket
+  Type: AWS::S3::Bucket
 ```
 
-* **Scenario** Create an S3 bucket to host production application APK. Every time the bucket is updated ensure the APK is accessible, has the right content length and content type, and ensure the bucket has encryption enabled.
+  * **Scenario** Create an S3 bucket to host production application APK. Every time the bucket is updated ensure the APK is accessible, has the right content length and content type, and ensure the bucket has encryption enabled.
 
 To work with this scenario we introduce a new property called __SkipPhase2ForEvents__ which disables Validations for Create and Delete phase. This is because when bucket is created we do not have the production APK available yet to verify its content. (The demo template however introduces a CFNX resource to upload the s3 production apk with wrong content type for demo purposes)
 
 ```YAML
 MyS3Bucket:
-### Validations
-CFNXPostValidations:
-  SkipPhase2ForEvents: ['Create', 'Delete']
-  HTTPInputStores:
-    Stores:
-      ProductionConfig: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/config-service.json
-  Api: s3/get_object
-  Arguments:
-    Bucket:
-      !Ref MyS3Bucket
-    Key:
-      FnX::HTTPStore: .ProductionConfig.RESPONSE.ProductionAPK
-  Validations:
-    EnsureProductionSanity:
-      Conditions:
-        EnsureAPKContentLength: ['Resp::.ContentLength', 'gt', 1]
-        IsAndroidType: ['Resp::.ContentType', 'eq', 'application/vnd.android.package-archive']
-        IsJarType: ['Resp::.ContentType', 'eq', 'application/java-archive']
-        EnsureServerSideEncryption: ['Resp::.ServerSideEncryption', 'eq', 'AES256']
-      MasterCondition: ( IsAndroidType OR IsJarType ) AND EnsureAPKContentLength AND EnsureServerSideEncryption
-      # Master condition is Optional and by default is AND or all conditions
+  ### Validations
+  CFNXPostValidations:
+    SkipPhase2ForEvents: ['Create', 'Delete']
+    HTTPInputStores:
+      Stores:
+        ProductionConfig: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/config-service.json
+    Api: s3/get_object
+    Arguments:
+      Bucket:
+        !Ref MyS3Bucket
+      Key:
+        FnX::HTTPStore: .ProductionConfig.RESPONSE.ProductionAPK
+    Validations:
+      EnsureProductionSanity:
+        Conditions:
+          EnsureAPKContentLength: ['Resp::.ContentLength', 'gt', 1]
+          IsAndroidType: ['Resp::.ContentType', 'eq', 'application/vnd.android.package-archive']
+          IsJarType: ['Resp::.ContentType', 'eq', 'application/java-archive']
+          EnsureServerSideEncryption: ['Resp::.ServerSideEncryption', 'eq', 'AES256']
+        MasterCondition: ( IsAndroidType OR IsJarType ) AND EnsureAPKContentLength AND EnsureServerSideEncryption
+        # Master condition is Optional and by default is AND or all conditions
 
-## Bucket Properties ##
-Type: AWS::S3::Bucket
-Properties:
-  BucketEncryption:
-    ServerSideEncryptionConfiguration:
-      - ServerSideEncryptionByDefault:
-          SSEAlgorithm: AES256
+  ## Bucket Properties ##
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketEncryption:
+      ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
 ```
 
-* Similarly you can work with [Python Scripts Apis](#ScriptExecutorApiUsage) as well
+  * Similarly you can work with [Python Scripts Apis](#ScriptExecutorApiUsage) as well
 
 [docs/samples/transform/resource_properties/post-validations0.yaml](/docs/samples/transform/resource_properties/post-validations0.yaml)
 ```
@@ -2489,8 +2476,8 @@ aws cloudformation deploy --template-file docs/samples/transform/resource_proper
 
 Similar to Exporting all the attributes/Ref to Outputs section, we can output the attributes to a defined S3 location. This is useful in cross-account/cross-region data sharing between cloudformation stacks. __CFNXOutputAttributesToS3__ takes two properties:
 
-* __Location__: S3 bucket/key location where the attributes should be stored
-* __JsonPath__: Inside the key, the outputs are structured in this path
+  * __Location__: S3 bucket/key location where the attributes should be stored
+  * __JsonPath__: Inside the key, the outputs are structured in this path
 
 CFNX provides a special macro __$[MACRO::S3LocalPath]__ which defaults to __aws/cfnx/ACCOUNTID/REGIONNAME/STACKNAME__ which can be used to store this outputs. This is required if you are using the same output location in multiple stacks so that they do not overwrite each other.
 
@@ -2498,69 +2485,69 @@ Once the outputs are exported to S3, you can use [CFNXGlobalImportExporter](#CFN
 
 ```YAML
 MyS3Bucket:
-CFNXOutputAttributesToS3:
-  Location: s3://mys3bucket/cfnx-all-attributes.json
-  JsonPath: $[MACRO::S3LocalPath]/MyS3Bucket
-Type: AWS::S3::Bucket
+  CFNXOutputAttributesToS3:
+    Location: s3://mys3bucket/cfnx-all-attributes.json
+    JsonPath: $[MACRO::S3LocalPath]/MyS3Bucket
+  Type: AWS::S3::Bucket
 ```
 
 With above configuration the outputs are saved in __s3://mys3bucket/cfnx-all-attributes.json__ as follows:
 
 ```JSON
 {
-  "aws": {
-      "cfnx": {
-          "ACCOUNTID": {
-              "REGIONNAME": {
-                  "STACKNAME": {
-                      "MyS3Bucket": {
-                          "Outputs": {},
-                          "S3Outputs": {
-                              "MyS3BucketWebsiteURL": "value",
-                              "MyS3BucketDualStackDomainName": "value",
-                              "MyS3BucketArn": "value",
-                              "MyS3BucketDomainName": "value"
-                          }
-                      }
-                  }
-              }
-          }
-      }
-  }
+    "aws": {
+        "cfnx": {
+            "ACCOUNTID": {
+                "REGIONNAME": {
+                    "STACKNAME": {
+                        "MyS3Bucket": {
+                            "Outputs": {},
+                            "S3Outputs": {
+                                "MyS3BucketWebsiteURL": "value",
+                                "MyS3BucketDualStackDomainName": "value",
+                                "MyS3BucketArn": "value",
+                                "MyS3BucketDomainName": "value"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 ```
 
-* You can choose to export only selected attributes or 'Ref'
+  * You can choose to export only selected attributes or 'Ref'
 
 ```YAML
 MyS3Bucket2:
-CFNXOutputAttributesToS3:
-  Location: s3://bhagangu-crh-repos/cfnx-selected-attributes.json
-  Attributes: ['Arn', 'Ref']
-  JsonPath: $[MACRO::S3LocalPath]/MyS3Bucket2
+  CFNXOutputAttributesToS3:
+    Location: s3://bhagangu-crh-repos/cfnx-selected-attributes.json
+    Attributes: ['Arn', 'Ref']
+    JsonPath: $[MACRO::S3LocalPath]/MyS3Bucket2
 ```
 
 Output Stored:
 
 ```
 {
-  "aws": {
-      "cfnx": {
-          "ACCOUNTID": {
-              "REGIONNAME": {
-                  "STACKNAME": {
-                      "MyS3Bucket2": {
-                          "Outputs": {},
-                          "S3Outputs": {
-                              "MyS3Bucket2Ref": "value",
-                              "MyS3Bucket2Arn": "value"
-                          }
-                      }
-                  }
-              }
-          }
-      }
-  }
+    "aws": {
+        "cfnx": {
+            "ACCOUNTID": {
+                "REGIONNAME": {
+                    "STACKNAME": {
+                        "MyS3Bucket2": {
+                            "Outputs": {},
+                            "S3Outputs": {
+                                "MyS3Bucket2Ref": "value",
+                                "MyS3Bucket2Arn": "value"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 ```
 
@@ -2572,7 +2559,7 @@ aws cloudformation deploy --template-file docs/samples/transform/resource_proper
 ```
 
 <a name="CFNXGlobalImportExporter"></a>
-## Global Data Import Exporter
+## Output Attributes of a resource to s3
 
 **PreRequisites: [Working with I/O Stores in CFNX](#WorkingWithIOStores)**
 **PreRequisites: [Working with Apis in CFNX](#WorkingWithApis)**
@@ -2585,24 +2572,24 @@ Basic Usage:
 
 ```YAML
 MyS3Bucket:
-CFNXGlobalImportExporter:
-  ProviderName: BucketNameProvider
-  HTTPInputStores:
-    Stores:
-      BucketConfig: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-name-provider.json
-  Outputs:    # --> Everything in this section is made available via Fn::GetAtt
-    BucketName:
-      FnX::HTTPStore: .RESPONSE.BucketName
-Type: AWS::S3::Bucket
-Properties:
-  BucketName: !GetAtt BucketNameProvider.BucketName   #<-- Using the provider in same resource
+  CFNXGlobalImportExporter:
+    ProviderName: BucketNameProvider
+    HTTPInputStores:
+      Stores:
+        BucketConfig: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/bucket-name-provider.json
+    Outputs:    # --> Everything in this section is made available via Fn::GetAtt
+      BucketName:
+        FnX::HTTPStore: .RESPONSE.BucketName
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: !GetAtt BucketNameProvider.BucketName   #<-- Using the provider in same resource
 
 MyS3Bucket:
-Type: AWS::S3::Bucket
-Properties:
-  Tags:
-    - Key: ParentBucket
-      Value: !GeAtt BucketNameProvider.BucketName    #<-- Using the provider in different resource
+  Type: AWS::S3::Bucket
+  Properties:
+    Tags:
+      - Key: ParentBucket
+        Value: !GeAtt BucketNameProvider.BucketName    #<-- Using the provider in different resource
 ```
 [docs/samples/transform/resource_properties/pre-validations-simple.yaml](/docs/samples/transform/resource_properties/pre-validations-simple.yaml)
 ```
@@ -2613,80 +2600,80 @@ aws cloudformation deploy --template-file docs/samples/transform/resource_proper
 
 We can import the data into the provider using:
 
-* __S3InputStores__: These are similar to [GlobalS3InputStores](#GlobalS3InputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::S3Store__ by passing a JQ query. [Reference](#S3InputStores)
-* __Boto3InputStores__: These are similar to [GlobalBoto3InputStores](#GlobalBoto3InputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::Boto3Store__ by passing a JQ query. [Reference](#Boto3InputStores)
-* __HTTPInputStores__: These are similar to [GlobalHTTPInputStores](#GlobalHTTPInputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::HTTPStore__ by passing a JQ query. [Reference](#HTTPInputStores)
-* __ScriptInputStores__: These are similar to [GlobalScriptInputStores](#GlobalScriptInputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::ScriptStore__ by passing a JQ query. [Reference](#ScriptInputStores)
-* __Api__: Make an Api call based on data from input stores and query the data using __FnX::Resp__ or __Resp::__ string prefix. Checkout [Working with Apis](#WorkingWithApis)
-* __Arguments__: when Api is used, you can pass arguments to the same
+  * __S3InputStores__: These are similar to [GlobalS3InputStores](#GlobalS3InputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::S3Store__ by passing a JQ query. [Reference](#S3InputStores)
+  * __Boto3InputStores__: These are similar to [GlobalBoto3InputStores](#GlobalBoto3InputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::Boto3Store__ by passing a JQ query. [Reference](#Boto3InputStores)
+  * __HTTPInputStores__: These are similar to [GlobalHTTPInputStores](#GlobalHTTPInputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::HTTPStore__ by passing a JQ query. [Reference](#HTTPInputStores)
+  * __ScriptInputStores__: These are similar to [GlobalScriptInputStores](#GlobalScriptInputStores), but can reference logical ids of other resources. Values can be accessed using __FnX::ScriptStore__ by passing a JQ query. [Reference](#ScriptInputStores)
+  * __Api__: Make an Api call based on data from input stores and query the data using __FnX::Resp__ or __Resp::__ string prefix. Checkout [Working with Apis](#WorkingWithApis)
+  * __Arguments__: when Api is used, you can pass arguments to the same
 
 We export the data using below properties:
 
 [Reference](#OutputStore)
-* __Outputs__: Accepts a dictionary object and all key values in this section are available for other resources to reference using __GetAtt__.
-* __S3Outputs__: Accepts a dictionary object and all key values similar to Outputs, but stored in __OutputStore__ instead. These are not accessible with __GetAtt__.
-* __OutputStore__: Accepts __Location__ (s3://mybucket/outputs.json) and __JsonPath__ (outputs/from/stack) where the outputs declared in __S3Outputs__ will be stored
-* __ExportAllOutputsToS3__: If set to __true__ all __Outputs__ and __S3Outputs__ are uploaded to __OutputStore__. If there is a conflict in output name, __S3Outputs__ take precedence.
+  * __Outputs__: Accepts a dictionary object and all key values in this section are available for other resources to reference using __GetAtt__.
+  * __S3Outputs__: Accepts a dictionary object and all key values similar to Outputs, but stored in __OutputStore__ instead. These are not accessible with __GetAtt__.
+  * __OutputStore__: Accepts __Location__ (s3://mybucket/outputs.json) and __JsonPath__ (outputs/from/stack) where the outputs declared in __S3Outputs__ will be stored
+  * __ExportAllOutputsToS3__: If set to __true__ all __Outputs__ and __S3Outputs__ are uploaded to __OutputStore__. If there is a conflict in output name, __S3Outputs__ take precedence.
 
 **Outputs here can be of any valid JSON data type including lists, dicts.**
 
-* __S3InputStores__ and __Boto3InputStores__ accept optional __AssumeRoleConfig__ to pass priviliged or cross account role configurations for downloading data.
+  * __S3InputStores__ and __Boto3InputStores__ accept optional __AssumeRoleConfig__ to pass priviliged or cross account role configurations for downloading data.
 
 **Scenario**:
 Complete Configuration Reference:
 ```YAML
 Resources:
-MyCFNResource:
-  CFNXGlobalImportExporter:
-    ProviderName: MyDataProvider
+  MyCFNResource:
+    CFNXGlobalImportExporter:
+      ProviderName: MyDataProvider
 
-    ### IMPORTER CONFIGURATION ###
-    Boto3InputStores:
-      Stores:
-        Store1: ...
-        Store1: ...
-      AssumeRoleConfig: # (Optional)
-        RoleArn: <priviliged role>
-    S3InputStores:
-      Stores:
-        MyLocalStore: <self account bucket>
-        FromCrossAccount: <cross-account-s3-bucket>
-      AssumeRoleConfig: # (Optional)
-        RoleArn: <priviliged role>
-    HTTPInputStores:
-      Stores:
-        Store1: http://publicendpoint.com/sub/url
-        Store2: http://internal.net/sub/url
-    ScriptInputStores:
-      Stores:
-        Store1: |
-          return {"Key": "Value"}
-        Store2: |
-          return {"AnotherKey": "AnotherValue"}
+      ### IMPORTER CONFIGURATION ###
+      Boto3InputStores:
+        Stores:
+          Store1: ...
+          Store1: ...
+        AssumeRoleConfig: # (Optional)
+          RoleArn: <priviliged role>
+      S3InputStores:
+        Stores:
+          MyLocalStore: <self account bucket>
+          FromCrossAccount: <cross-account-s3-bucket>
+        AssumeRoleConfig: # (Optional)
+          RoleArn: <priviliged role>
+      HTTPInputStores:
+        Stores:
+          Store1: http://publicendpoint.com/sub/url
+          Store2: http://internal.net/sub/url
+      ScriptInputStores:
+        Stores:
+          Store1: |
+            return {"Key": "Value"}
+          Store2: |
+            return {"AnotherKey": "AnotherValue"}
 
-    ### OPTIONAL API CONFIGURATION ###
-    Api:
-    ServiceType: boto3 (default) | HTTP | ScriptExecutor
-    Arguments:
+      ### OPTIONAL API CONFIGURATION ###
+      Api:
+      ServiceType: boto3 (default) | HTTP | ScriptExecutor
+      Arguments:
 
-    ### INTERNAL EXPORTER CONFIGURATION accessible via GetAtt ###
-    Outputs:
-      DatabasePassword:
-        FnX::Boto3Store: .Store1.<JQ>
-      OtherOutput:
-        FnX::ScriptStore: .Store1.Key
-      ApiResponse:
-        FnX::Resp: <JQ>
+      ### INTERNAL EXPORTER CONFIGURATION accessible via GetAtt ###
+      Outputs:
+        DatabasePassword:
+          FnX::Boto3Store: .Store1.<JQ>
+        OtherOutput:
+          FnX::ScriptStore: .Store1.Key
+        ApiResponse:
+          FnX::Resp: <JQ>
 
-    ### EXTERNAL S3 EXPORTER CONFIGURATION accessible via another CFNXGlobalImportExporter ###
-    OutputStore:
-      Location: s3://mybucket/key.json
-      JsonPath: inside/json/path
-      AssumeRoleConfig: # Optional
-        RoleArn:
-    S3Outputs:
-      OutputToS3: MyValue
-    ExportAllOutputsToS3: true    # --> Export all Outputs section and S3Outputs section to S3
+      ### EXTERNAL S3 EXPORTER CONFIGURATION accessible via another CFNXGlobalImportExporter ###
+      OutputStore:
+        Location: s3://mybucket/key.json
+        JsonPath: inside/json/path
+        AssumeRoleConfig: # Optional
+          RoleArn:
+      S3Outputs:
+        OutputToS3: MyValue
+      ExportAllOutputsToS3: true    # --> Export all Outputs section and S3Outputs section to S3
 ```
 
 <a name="WorkingWithSecrets"></a>
@@ -2702,33 +2689,33 @@ You can use [CFNXGlobalImportExporter](#CFNXGlobalImportExporter) to download se
 Transform: [CFNX]
 
 Resources:
-MyRDSInstance:
-  CFNXGlobalImportExporter:
-    ProviderName: SecretPasswordProvider
-    Boto3InputStores:
-      Stores:
-        PasswordStore: ["ssm/get_parameter", {"Name": "DatabasePassword", "WithDecryption": true}]
-      AssumeRoleConfig:
-        RoleArn: arn:aws:iam::ACCOUNTID:role/priviligedssmroleA
-    Outputs:
-      DatabasePassword:
-        FnX::Boto3Store: .PasswordStore.Parameter.Value
-  Type: AWS::RDS::DBInstance
-  Properties:
-    DBInstanceClass: db.t2.large
-    MasterUsername: root
-    MasterUserPassword: !GetAtt SecretPasswordProvider.DatabasePassword # << Access
-    AllocatedStorage: 100
-    Engine: mysql
-### Second DB Instance - does not have to declare import exporter again as previous one is global ###
-MyRDSInstance2:
-  Type: AWS::RDS::DBInstance
-  Properties:
-    DBInstanceClass: db.t2.large
-    MasterUsername: root
-    MasterUserPassword: !GetAtt SecretPasswordProvider.DatabasePassword # << Access
-    AllocatedStorage: 100
-    Engine: mysql
+  MyRDSInstance:
+    CFNXGlobalImportExporter:
+      ProviderName: SecretPasswordProvider
+      Boto3InputStores:
+        Stores:
+          PasswordStore: ["ssm/get_parameter", {"Name": "DatabasePassword", "WithDecryption": true}]
+        AssumeRoleConfig:
+          RoleArn: arn:aws:iam::ACCOUNTID:role/priviligedssmroleA
+      Outputs:
+        DatabasePassword:
+          FnX::Boto3Store: .PasswordStore.Parameter.Value
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.t2.large
+      MasterUsername: root
+      MasterUserPassword: !GetAtt SecretPasswordProvider.DatabasePassword # << Access
+      AllocatedStorage: 100
+      Engine: mysql
+  ### Second DB Instance - does not have to declare import exporter again as previous one is global ###
+  MyRDSInstance2:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceClass: db.t2.large
+      MasterUsername: root
+      MasterUserPassword: !GetAtt SecretPasswordProvider.DatabasePassword # << Access
+      AllocatedStorage: 100
+      Engine: mysql
 ```
 
 [docs/samples/transform/resource_properties/global-data-import-exporter-access-secrets.yaml](/docs/samples/transform/resource_properties/global-data-import-exporter-access-secrets.yaml)
@@ -2738,7 +2725,6 @@ bash cfnxcmd transform-local -t docs/samples/transform/resource_properties/globa
 aws cloudformation deploy --template-file docs/samples/transform/resource_properties/global-data-import-exporter-access-secrets.yaml --stack-name global-data-import-exporter-access-secrets-yaml-1
 ```
 
-<a name="CFNXWaitOn"></a>
 ## CFNXWaitOn
 
 __CFNXWaitOn__ lets you wait on a particular state to be met and proceed only after the declared condition is satisfied, with a timeout.
@@ -2749,43 +2735,43 @@ CFNXWaitOn accepts other config properties like [InputStores](#WorkingWithIOStor
 
 Once the state has been met we can access output if required by passing a [JQ](#UsingJQ) query to __FnX::WaitResp__ or __WaitResp::__ string prefix method. Please note that we are using __WaitResp__ and not __Resp__ which is used in other properties that do not wait on state.
 
-* **Scenario**: Create an SNS Topic, and SNS Subscription, and wait until the SNS subscription is confirmed before creating an S3 bucket that can use the SNS Topic for S3 events.
+  * **Scenario**: Create an SNS Topic, and SNS Subscription, and wait until the SNS subscription is confirmed before creating an S3 bucket that can use the SNS Topic for S3 events.
 
 ```YAML
 Transform:
-- Name: CFNX
-  Parameters:
-    StackName: !Sub ${AWS::StackName}
+  - Name: CFNX
+    Parameters:
+      StackName: !Sub ${AWS::StackName}
 
 Resources:
-SNSTopic:
-  Type: "AWS::SNS::Topic"
-  Properties:
-    Subscription:
-      -
-        Endpoint: myemail@amazon.com
-        Protocol: email
-SNSTopicPolicy:
-  Type: "AWS::SNS::TopicPolicy"
-  Properties:
-    ...
-MyS3Bucket:
-  DependsOn: [SNSTopicPolicy]
-  Type: AWS::S3::Bucket
-  CFNXWaitOn:
-    Api: sns/list_subscriptions_by_topic
-    Arguments:
-      TopicArn: !Ref SNSTopic
-    SuccessOn:
-      Conditions:
-        Status200: ['WaitResp::.ResponseMetadata.HTTPStatusCode', 'eq', 200]
-        SubConfirmed: ['WaitResp::.Subscriptions[0].SubscriptionArn', 'ne', 'PendingConfirmation']
-  # Rest of the properties
-  Properties:
-    NotificationConfiguration:
-      TopicConfigurations:
-        - Topic: !Ref SNSTopic
-          Event: s3:ObjectCreated:*
+  SNSTopic:
+    Type: "AWS::SNS::Topic"
+    Properties:
+      Subscription:
+        -
+          Endpoint: myemail@amazon.com
+          Protocol: email
+  SNSTopicPolicy:
+    Type: "AWS::SNS::TopicPolicy"
+    Properties:
+      ...
+  MyS3Bucket:
+    DependsOn: [SNSTopicPolicy]
+    Type: AWS::S3::Bucket
+    CFNXWaitOn:
+      Api: sns/list_subscriptions_by_topic
+      Arguments:
+        TopicArn: !Ref SNSTopic
+      SuccessOn:
+        Conditions:
+          Status200: ['WaitResp::.ResponseMetadata.HTTPStatusCode', 'eq', 200]
+          SubConfirmed: ['WaitResp::.Subscriptions[0].SubscriptionArn', 'ne', 'PendingConfirmation']
+    # Rest of the properties
+    Properties:
+      NotificationConfiguration:
+        TopicConfigurations:
+          - Topic: !Ref SNSTopic
+            Event: s3:ObjectCreated:*
 
 ```
 
@@ -2802,7 +2788,6 @@ While you are deploying the stack you could even watch the progress of how Wait 
 bash cfnxcmd logs -s wait-on-sns-subscription-yaml-1 -l CFNXWaitOnMyS3Bucketad27ad2705
 ```
 
-<a name="CFNXStabilizeOn"></a>
 ## CFNXStabilizeOn
 
 __CFNXStablizeOn__ is the right please to run any kind of tests that you want to perform after a resource has been updated. It can include, invoking internal jenkins tests and waiting on them, or making boto3 api calls querying resource status to ensure they are in the right condition, or even writing your own python script using __ScriptExecutor__ ServiceType.
@@ -2815,7 +2800,7 @@ __CFNXStablizeOn__ accepts other config properties like [InputStores](#WorkingWi
 
 Once the state has been met we can access output if required by passing a [JQ](#UsingJQ) query to __FnX::WaitResp__ or __WaitResp::__ string prefix method. Please note that we are using __WaitResp__ and not __Resp__ which is used in other properties that do not wait on state.
 
-* **Scenario**: Trigger a jenkins job, wait until the job succeeds, or fail if the job fails.
+  * **Scenario**: Trigger a jenkins job, wait until the job succeeds, or fail if the job fails.
 
 - For demo purposes, using 'GET' method but in practice it can be a POST/PUT method to trigger jenkins job
 - Note the use of __WaitResp::__ and not __Resp::__ as we are waiting on a state to be successful.
@@ -2825,30 +2810,30 @@ Once the state has been met we can access output if required by passing a [JQ](#
 Transform: [CFNX]
 
 Resources:
-MyS3Bucket1:
-  CFNXStabilizeOn:
-    HTTPInputStores:
-      Stores:
-        TriggerJenkins: ['GET', 'https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-new-job-id.json']
-    ServiceType: HTTP
-    Api:
-      FnX::Join:
-        - /
-        -
-          - https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/
-          - FnX::HTTPStore: .TriggerJenkins.RESPONSE.JobId
-    SuccessOn:
-      Conditions:
-        IntegTestsPassed: ['WaitResp::.RESPONSE.productiontestresults', 'eq', 'passed']
-    FailOn:
-      Conditions:
-        IntegTestsFailed: ['WaitResp::.RESPONSE.productiontestresults', 'eq', 'failed']
-    TotalTimeout: 900
-  Type: AWS::S3::Bucket
+  MyS3Bucket1:
+    CFNXStabilizeOn:
+      HTTPInputStores:
+        Stores:
+          TriggerJenkins: ['GET', 'https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-new-job-id.json']
+      ServiceType: HTTP
+      Api:
+        FnX::Join:
+          - /
+          -
+            - https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/
+            - FnX::HTTPStore: .TriggerJenkins.RESPONSE.JobId
+      SuccessOn:
+        Conditions:
+          IntegTestsPassed: ['WaitResp::.RESPONSE.productiontestresults', 'eq', 'passed']
+      FailOn:
+        Conditions:
+          IntegTestsFailed: ['WaitResp::.RESPONSE.productiontestresults', 'eq', 'failed']
+      TotalTimeout: 900
+    Type: AWS::S3::Bucket
 
-MyS3Bucket2:
-  DependsOn: MyS3Bucket1
-  Type: AWS::S3::Bucket
+  MyS3Bucket2:
+    DependsOn: MyS3Bucket1
+    Type: AWS::S3::Bucket
 ```
 
 [docs/samples/transform/resource_properties/stabilize-on.yaml](/docs/samples/transform/resource_properties/stabilize-on.yaml)
@@ -2876,38 +2861,38 @@ When working with boto3 services __Api__ should be of format __Service/Api__ Eg:
 ```YAML
 Transform: [CFNX]
 Resources:
-CodeStarProject:
-  Type: AWS::CFNX::GenericResource
-  Properties:
-    __CONSTANTS__:
-      ProjectId: crh-project-xxx
-      ProjectName: MyFirstProject
-    Handlers:
-      Commons:
-        Arguments:
-          id: $[CONST::ProjectId]
-      CommonsForCreateAndUpdate:
-        Arguments:
-          name: $[CONST::ProjectName]
-          description: My Project Description
-      Create:
-        Api: codestar/create_project
-        PropertyNameForPhysicalResourceId: id   # Immutable Property
-      Update:
-        Api: codestar/update_project
-      Delete:
-        Api: codestar/delete_project
+  CodeStarProject:
+    Type: AWS::CFNX::GenericResource
+    Properties:
+      __CONSTANTS__:
+        ProjectId: crh-project-xxx
+        ProjectName: MyFirstProject
+      Handlers:
+        Commons:
+          Arguments:
+            id: $[CONST::ProjectId]
+        CommonsForCreateAndUpdate:
+          Arguments:
+            name: $[CONST::ProjectName]
+            description: My Project Description
+        Create:
+          Api: codestar/create_project
+          PropertyNameForPhysicalResourceId: id   # Immutable Property
+        Update:
+          Api: codestar/update_project
+        Delete:
+          Api: codestar/delete_project
 ```
 
-* Observe the Create, Delete and Update handlers.
-* Generic Resources allows to group common properties using CommonsForCreateAndUpdate and Commons
-* PropertyNameForPhysicalResourceId determines the physical id of the resource. If the ID is changed, GenericResource will perform replacement update automatically.
-* Along with __PropertyNameForPhysicalResourceId__ you can explicitly specify a list of properties under __Handers/ReplaceOn__ for which replacement updates will be triggered.
+  * Observe the Create, Delete and Update handlers.
+  * Generic Resources allows to group common properties using CommonsForCreateAndUpdate and Commons
+  * PropertyNameForPhysicalResourceId determines the physical id of the resource. If the ID is changed, GenericResource will perform replacement update automatically.
+  * Along with __PropertyNameForPhysicalResourceId__ you can explicitly specify a list of properties under __Handers/ReplaceOn__ for which replacement updates will be triggered.
 
 ```YAML
 Properties:
-Handlers:
-  ReplaceOn: ['BucketName']
+  Handlers:
+    ReplaceOn: ['BucketName']
 ```
 
 [docs/samples/transform/gcr/codestar-resource.yaml](/docs/samples/transform/gcr/codestar-resource.yaml)
@@ -2917,33 +2902,32 @@ bash cfnxcmd transform-local -t docs/samples/transform/gcr/codestar-resource.yam
 aws cloudformation deploy --template-file docs/samples/transform/gcr/codestar-resource.yaml --stack-name codestar-resource-yaml-1
 ```
 
-<a name="AWSCFNXGenericResourceExistingResources"></a>
 ## Managing existing resources with GenericResource
 
 Similar to managing life cycle of new resources, you can manage existing resources which are created outside cloudformation by defining the APIs you want to trigger for __Create__, __Update__, __Delete__ handler.
 
-**Scenario**: Manage life cycle policy for an existing ECR repository
+  **Scenario**: Manage life cycle policy for an existing ECR repository
 
 ```YAML
 Transform: [CFNX]
 
 Resources:
-MyCRHResource:
-  Type: AWS::CFNX::GenericResource
-  Properties:
-    Handlers:
-      Commons:
-        Arguments:
-          repositoryName: demonstration
-      CommonsForCreateAndUpdate:
-        Arguments:
-          lifecyclePolicyText: '{"rules": [{"action": {"type": "expire"}, "rulePriority": 1, "selection": {"countNumber": 1000, "countType": "sinceImagePushed", "countUnit": "days", "tagStatus": "untagged"}, "description": "Expire images older than 100 days"}]}'
-      Create:
-        Api: ecr/put_lifecycle_policy
-      Update:
-        Api: ecr/put_lifecycle_policy
-      Delete:
-        Api: ecr/delete_lifecycle_policy
+  MyCRHResource:
+    Type: AWS::CFNX::GenericResource
+    Properties:
+      Handlers:
+        Commons:
+          Arguments:
+            repositoryName: demonstration
+        CommonsForCreateAndUpdate:
+          Arguments:
+            lifecyclePolicyText: '{"rules": [{"action": {"type": "expire"}, "rulePriority": 1, "selection": {"countNumber": 1000, "countType": "sinceImagePushed", "countUnit": "days", "tagStatus": "untagged"}, "description": "Expire images older than 100 days"}]}'
+        Create:
+          Api: ecr/put_lifecycle_policy
+        Update:
+          Api: ecr/put_lifecycle_policy
+        Delete:
+          Api: ecr/delete_lifecycle_policy
 ```
 
 * We define Create Update handlers to use the same API call.
@@ -2971,39 +2955,38 @@ aws cloudformation deploy --template-file docs/samples/transform/gcr/resource-ad
 **CFNX works in two modes:**
 ---
 
-* Transform mode: During the creation of change set, CFNX identifies that the request is for transform processing and proceeds to handling CFNX configuration.
-* GCR mode: This is Generic Custom Resource Mode. Generic custom resource is built into CFNX and provides below resource types:
+  * Transform mode: During the creation of change set, CFNX identifies that the request is for transform processing and proceeds to handling CFNX configuration.
+  * GCR mode: This is Generic Custom Resource Mode. Generic custom resource is built into CFNX and provides below resource types:
 
-  - Resolver - Basis for providing InputStores, OutputStores, Validations etc. (handlers/resolver.py)
-  - Delay - Basis for introducing delays in stacks (handlers/delay.py)
-  - Timer - Basis for starting a timer process which times out the stack/resource (handlers/timer.py)
-  - SimpleService - Make simple API calls using boto3, HTTP, ScriptExecutor and make them available for queries using intrinsic functions and JQ. (handlers/simple_service.py)
-  - WaitForState - Provides polling functionality by making API calls at configured Poll Delay and checking for Success and Failure conditions and thresholds (handlers/wait_for_state.py)
-  - GenericResource - Manages end to end life cycle of a resource including Replacements. (handlers/generic_resource.py)
-  - Transformer - Accepts an input request performs an operation and transforms it into one of the above types for further processing. Eg: creates a snapshot and sends the snapshot identifier to WaitForState to monitor until it becomes active. (handlers/transformer.py)
+    - Resolver - Basis for providing InputStores, OutputStores, Validations etc. (handlers/resolver.py)
+    - Delay - Basis for introducing delays in stacks (handlers/delay.py)
+    - Timer - Basis for starting a timer process which times out the stack/resource (handlers/timer.py)
+    - SimpleService - Make simple API calls using boto3, HTTP, ScriptExecutor and make them available for queries using intrinsic functions and JQ. (handlers/simple_service.py)
+    - WaitForState - Provides polling functionality by making API calls at configured Poll Delay and checking for Success and Failure conditions and thresholds (handlers/wait_for_state.py)
+    - GenericResource - Manages end to end life cycle of a resource including Replacements. (handlers/generic_resource.py)
+    - Transformer - Accepts an input request performs an operation and transforms it into one of the above types for further processing. Eg: creates a snapshot and sends the snapshot identifier to WaitForState to monitor until it becomes active. (handlers/transformer.py)
 
 **Other import components:**
 ___
-  - Function and Macro Resolver: This is the core behind all intrinsic function and macro resolutions. It is aware of both Transform and GCR modes and performs resolutions depending on the mode it is being called from. Ensures circular dependency checks etc. (helpers/function_resolver.py)
-  - Clients: includes boto3, http, script executor clients. Also, provides generic interfaces for actions, validations, I/O stores, timer executions, lambda reinvokes, cfn responses etc. (clients/...)
-  - Proxy: Each mode has its own proxy (proxy.py for GCR and transform_proxy.py for Transform). Proxy initiates and co-ordinates various phases to reach the end state.
+    - Function and Macro Resolver: This is the core behind all intrinsic function and macro resolutions. It is aware of both Transform and GCR modes and performs resolutions depending on the mode it is being called from. Ensures circular dependency checks etc. (helpers/function_resolver.py)
+    - Clients: includes boto3, http, script executor clients. Also, provides generic interfaces for actions, validations, I/O stores, timer executions, lambda reinvokes, cfn responses etc. (clients/...)
+    - Proxy: Each mode has its own proxy (proxy.py for GCR and transform_proxy.py for Transform). Proxy initiates and co-ordinates various phases to reach the end state.
 
 **Phases in CFNX:**
 ---
-- Phase0: Includes data type corrections for known properties, validating basic entities of the request object exist, like request id, event type, transform id etc. Post validation, it initializes certain global context variables like boto3 sessions, http clients, loggers etc. (handlers/proxy.py)
-- Phase1: Resolves the entire event object recursively (in more than 1 phases) and validates the resultant object to match the desired schema. (handlers/proxy.py)
-- Phase2: This is post handler execution, at this point we have access to all API results and Wait API results to perform final resolution of any pending functions.
-- ReInvoke Phase: Reinvokes lambda if request is not completed. If event object size grows beyond allowed limits, it also uses S3 as intermediate storage for event object and retrieves in the next run.
-- Close Request: Performs Success and Failure Actions, sets the final state of the request, resolves Outputs and S3Outputs, uploads S3 outputs if any and sends CFN response.
+  - Phase0: Includes data type corrections for known properties, validating basic entities of the request object exist, like request id, event type, transform id etc. Post validation, it initializes certain global context variables like boto3 sessions, http clients, loggers etc. (handlers/proxy.py)
+  - Phase1: Resolves the entire event object recursively (in more than 1 phases) and validates the resultant object to match the desired schema. (handlers/proxy.py)
+  - Phase2: This is post handler execution, at this point we have access to all API results and Wait API results to perform final resolution of any pending functions.
+  - ReInvoke Phase: Reinvokes lambda if request is not completed. If event object size grows beyond allowed limits, it also uses S3 as intermediate storage for event object and retrieves in the next run.
+  - Close Request: Performs Success and Failure Actions, sets the final state of the request, resolves Outputs and S3Outputs, uploads S3 outputs if any and sends CFN response.
 
 **Code Documentation:**
 --
-Code is very well documented with analysis, design and decision making details wherever necessary.
+  Code is very well documented with analysis, design and decision making details wherever necessary.
 
 **Pending**:
 
 - Test cases
-
 
 <a name="References"></a>
 # References
@@ -3021,24 +3004,24 @@ Please read through the specific api type you like to use with above links.
 
 Apis are used in CFNX in two different contexts:
 
-1) Making Simple Api calls in __CFNXPreValidations__, __CFNXPostValidations__, __CFNXDataProvider__, __CFNXDataExporter__. In this context you can query the output of the api using:
+  1) Making Simple Api calls in __CFNXPreValidations__, __CFNXPostValidations__, __CFNXDataProvider__, __CFNXDataExporter__. In this context you can query the output of the api using:
 
 - __FnX::Resp__ intrinsic function
 ```YAML
 Value:
-FnX::Resp: ".ResponseMetadata.HTTPStatusCode" # For boto3
+  FnX::Resp: ".ResponseMetadata.HTTPStatusCode" # For boto3
 ```
 - __Resp::__ string prefix
 ```YAML
 Value: 'Resp::.ResponseMetadata.HTTPStatusCode'
 ```
 
-2) Polling context where apis are made every PollDelay seconds in __CFNXWaitOn__, __CFNXStabilizeOn__. In this context we are waiting for a particular state to be achieved. You can query the final output of the api using:
+  2) Polling context where apis are made every PollDelay seconds in __CFNXWaitOn__, __CFNXStabilizeOn__. In this context we are waiting for a particular state to be achieved. You can query the final output of the api using:
 
 - __FnX::WaitResp__ intrinsic function
 ```YAML
 Value:
-FnX::WaitResp: ".ResponseMetadata.HTTPStatusCode" # For boto3
+  FnX::WaitResp: ".ResponseMetadata.HTTPStatusCode" # For boto3
 ```
 - __WaitResp::__ string prefix
 ```YAML
@@ -3060,7 +3043,7 @@ boto3 apis also support passing __Arguments__ to the apis. With CFNX we pass tho
 ```YAML
 Api: s3/create_bucket
 Arguments:
-Bucket: MyS3Bucket
+  Bucket: MyS3Bucket
 ```
 
 **Reading response from Boto3 apis**:
@@ -3069,17 +3052,17 @@ __CFNX__ supports using [JQ](#UsingJQ) queries on the response of boto3. The out
 
 ```JSON
 {
-  "ResponseMetadata": {
-      "HTTPHeaders": {
-          "content-length": "123",
-          "date": "Sun, 08 Jul 2018 17:54:27 GMT",
-          "x-amzn-requestid": "f4f8b71d-82d7-11e8-8ff6-93d137616026"
-      },
-      "HTTPStatusCode": 200,
-      "RequestId": "f4f8b71d-82d7-11e8-8ff6-93d137616026",
-      "RetryAttempts": 0
-  },
-  "Location": "MyS3Bucket"
+    "ResponseMetadata": {
+        "HTTPHeaders": {
+            "content-length": "123",
+            "date": "Sun, 08 Jul 2018 17:54:27 GMT",
+            "x-amzn-requestid": "f4f8b71d-82d7-11e8-8ff6-93d137616026"
+        },
+        "HTTPStatusCode": 200,
+        "RequestId": "f4f8b71d-82d7-11e8-8ff6-93d137616026",
+        "RetryAttempts": 0
+    },
+    "Location": "MyS3Bucket"
 }
 ```
 
@@ -3109,18 +3092,18 @@ You can also configure boto3 to use different connection settings like __region_
 
 ```YAML
 Boto3ConnectionConfig:
-region_name: us-east-1
-connect_timeout: 30      # Default: 30
-read_timeout: 60         # Default: 60
-retries:
-  max_attempts: 0        # Default: 0
+  region_name: us-east-1
+  connect_timeout: 30      # Default: 30
+  read_timeout: 60         # Default: 60
+  retries:
+    max_attempts: 0        # Default: 0
 ```
 
 You can configure __AssumeRoleConfig__ for privileged access or cross account access using below syntax:
 
 ```YAML
 AssumeRoleConfig:
-RoleArn: <arn>
+  RoleArn: <arn>
 ```
 
 Complete Config Reference:
@@ -3128,15 +3111,15 @@ Complete Config Reference:
 ServiceType: boto3       # ---> Optional for boto3 as it is the default
 Api: s3/create_bucket
 Arguments:
-BucketName: MyBucket
+  BucketName: MyBucket
 Boto3ConnectionConfig:
-region_name: us-east-1
-connect_timeout: 30      # Default: 30
-read_timeout: 60         # Default: 60
-retries:
-  max_attempts: 0        # Default: 0
+  region_name: us-east-1
+  connect_timeout: 30      # Default: 30
+  read_timeout: 60         # Default: 60
+  retries:
+    max_attempts: 0        # Default: 0
 AssumeRoleConfig:
-RoleArn: <arn>
+  RoleArn: <arn>
 ```
 
 <a name="HTTPApiUsage"></a>
@@ -3154,7 +3137,7 @@ ServiceType: HTTP
 Api: https://jsonplaceholder.typicode.com/posts
 Method: GET
 Arguments:
-userId: 1
+  userId: 1
 ```
 
 ```YAML
@@ -3162,8 +3145,8 @@ ServiceType: POST
 Api: https://jsonplaceholder.typicode.com/posts
 Method: GET
 Arguments:
-title: My New Post
-body: useful blog
+  title: My New Post
+  body: useful blog
 ```
 
 **Reading response from HTTP apis**:
@@ -3174,15 +3157,15 @@ For example making a GET request to __https://jsonplaceholder.typicode.com/posts
 
 ```JSON
 {
-  "STATUS_CODE": 200,
-  "RESPONSE": [
-    {
-      "userId": 1,
-      "id": 1,
-      "title": "My First Post",
-      "body": "useful content"
-    }
-  ]
+    "STATUS_CODE": 200,
+    "RESPONSE": [
+      {
+        "userId": 1,
+        "id": 1,
+        "title": "My First Post",
+        "body": "useful content"
+      }
+    ]
 }
 ```
 
@@ -3206,8 +3189,8 @@ Similar to boto3 you can configure connection settings with below object:
 
 ```YAML
 HTTPConnectionConfig:
-retries: 0             # Default 0
-timeout: 60            # Default 60
+  retries: 0             # Default 0
+  timeout: 60            # Default 60
 ```
 
 Complete Config Reference:
@@ -3216,10 +3199,10 @@ ServiceType: HTTP
 Api: http://myservice.com
 Method: POST
 Arguments:
-Username: bob
+  Username: bob
 HTTPConnectionConfig:
-retries: 0             # Default 0
-timeout: 60            # Default 60
+  retries: 0             # Default 0
+  timeout: 60            # Default 60
 ```
 
 <a name="ScriptExecutorApiUsage"></a>
@@ -3231,17 +3214,17 @@ CFNX makes it easy to work with ScriptExecutor by making it compatible with API 
 ```YAML
 ServiceType: ScriptExecutor
 Api: |
-return args['UserName']
+  return args['UserName']
 Arguments:
-UserName: bob
+  UserName: bob
 ```
 
 We can also add __ScriptExecutorConnectionConfig__ to configure retries and timeouts:
 
 ```YAML
 ScriptExecutorConnectionConfig:
-retries: 0                              # Default 0
-timeout: 60                             # Default 60
+  retries: 0                              # Default 0
+  timeout: 60                             # Default 60
 ```
 
 When working with boto3/http you can also pass __Boto3ConnectionConfig__ and __AssumeRoleConfig__ and __HTTPConnectionConfig__ which are pre-baked into the executor shell for easy access.
@@ -3286,26 +3269,26 @@ Complete Config Reference:
 ```YAML
 ServiceType: ScriptExecutor
 Api: |
-client = boto3_session.client('rds')
-return args['UserName']
+  client = boto3_session.client('rds')
+  return args['UserName']
 Arguments:
-UserName: bob
+  UserName: bob
 ScriptExecutorConnectionConfig:
-retries: 0          # Default 0
-timeout: 60                             # Default 60
+  retries: 0          # Default 0
+  timeout: 60                             # Default 60
 
 HTTPConnectionConfig:    # --> Passed to http_config inside executor shell
-retries: 0             # Default 0
-timeout: 60            # Default 60
+  retries: 0             # Default 0
+  timeout: 60            # Default 60
 
 Boto3ConnectionConfig:   # --> Passed to boto3_config inside executor shell
-region_name: us-east-1
-connect_timeout: 30      # Default: 30
-read_timeout: 60         # Default: 60
-retries:
-  max_attempts: 0        # Default: 0
+  region_name: us-east-1
+  connect_timeout: 30      # Default: 30
+  read_timeout: 60         # Default: 60
+  retries:
+    max_attempts: 0        # Default: 0
 AssumeRoleConfig:         # --> Initialized into boto3_session inside executor shell
-RoleArn: <arn>
+  RoleArn: <arn>
 ```
 
 <a name="Conditions"></a>
@@ -3315,9 +3298,9 @@ Some of the properties where conditions are used are __SuccessOn__, __FailOn__, 
 
 Conditions determine the final True/False status based on mentioned rules and an optional __MasterCondition__. Every condition is made of two properties:
 
-* __Conditions__: key value object with format ConditionName: [condition rule]
+  * __Conditions__: key value object with format ConditionName: [condition rule]
 
-* __MasterCondition__(Optional): By default all Conditions should be True. You can specify a master condition to alter the behavior by using __NOT__, __AND__, __OR__ operators.
+  * __MasterCondition__(Optional): By default all Conditions should be True. You can specify a master condition to alter the behavior by using __NOT__, __AND__, __OR__ operators.
 
 - Every rule in __Conditions__ block take 3 elements, __Operand1__, __Operator__, __Operand2__.
 - The values for __Operand1__ and __Operand2__ can be provided by intrinsic functions, macros, responses from API requests etc.
@@ -3326,21 +3309,21 @@ Conditions determine the final True/False status based on mentioned rules and an
 Basic Conditions Block:
 ```YAML
 Conditions:
-MyCondition: [1, 'eq', '1']
+  MyCondition: [1, 'eq', '1']
 ```
 Though this solves many simple use cases, for slightly intermediate levels we will need to write this:
 ```YAML
 Conditions:
-MyCondition1: [1, 'eq', '1']
-### Default AND ###
-MyCondition2: [2, 'eq', '2']
+  MyCondition1: [1, 'eq', '1']
+  ### Default AND ###
+  MyCondition2: [2, 'eq', '2']
 ```
 The final state is determined by using __AND__ of all the mentioned conditions. To change this Default behavior use __MasterCondition__.
 
 ```YAML
 Conditions:
-MyCondition1: [1, 'eq', '1']
-MyCondition2: [2, 'eq', '2']
+  MyCondition1: [1, 'eq', '1']
+  MyCondition2: [2, 'eq', '2']
 MasterCondition: 'MyCondition1 OR MyCondition2'
 ```
 
@@ -3350,21 +3333,21 @@ For example the below __MasterCondition__ is possible:
 
 ```YAML
 Conditions:
-LatencyUnderControl:
-  - FnX::GlobalBoto3InputStore: .MyCloudwatchMetric.Latency
-  - lt
-  - 0.1
-IsWeekday:
-  -
-    FnX::Python: |
-      from datetime import datetime
-      return datetime.now().weekday()
-  - memberof
-  - [0,1,2,3,4]
-NoActiveOutages:
-  - FnX::GlobalHTTPInputStore: .LatencyStore.ActiveOutages
-  - eq
-  - 0
+  LatencyUnderControl:
+    - FnX::GlobalBoto3InputStore: .MyCloudwatchMetric.Latency
+    - lt
+    - 0.1
+  IsWeekday:
+    -
+      FnX::Python: |
+        from datetime import datetime
+        return datetime.now().weekday()
+    - memberof
+    - [0,1,2,3,4]
+  NoActiveOutages:
+    - FnX::GlobalHTTPInputStore: .LatencyStore.ActiveOutages
+    - eq
+    - 0
 MasterCondition: ( LatencyUnderControl AND NoOutagesActive ) OR ( NOT IsWeekDay )
 ```
 
@@ -3378,17 +3361,17 @@ Validations group multiple [Conditions](#Conditions) objects allowing you to def
 Basic Validation Object:
 ```YAML
 Validations:
-StorageValidation:
-  Conditions:
-    SizeReduced: [ $[PARAM::StorageSize], 'lt', $[OLDPARAM::StorageSize] ]
-    TypeChanged: [ $[PARAM::StorageType], 'ne', $[OLDPARAM::StorateType] ]
-  MasterCondition: 'NOT SizeReduced AND NOT TypeChanged'  # Optional
-AutoScalingValidation:
-  Conditions:
-    EnsureInstancesAreEvenNumbered: ...
-    EnsureUpdatePolicyIsRolling: ...
-  # Optional master condition
-  MasterCondition: ...
+  StorageValidation:
+    Conditions:
+      SizeReduced: [ $[PARAM::StorageSize], 'lt', $[OLDPARAM::StorageSize] ]
+      TypeChanged: [ $[PARAM::StorageType], 'ne', $[OLDPARAM::StorateType] ]
+    MasterCondition: 'NOT SizeReduced AND NOT TypeChanged'  # Optional
+  AutoScalingValidation:
+    Conditions:
+      EnsureInstancesAreEvenNumbered: ...
+      EnsureUpdatePolicyIsRolling: ...
+    # Optional master condition
+    MasterCondition: ...
 ```
 
 - All the validation objects should succeed for the validation to be considered successful.
@@ -3404,12 +3387,12 @@ Since CFNX provides a common interface to work with all types of APIs (boto3, HT
 
 __CFNX__ provides additional enhancements when working with JQ queries for safety and avoid incorrect data.
 
-* If the resultant JQ query provides a __None__/__null__ response, CFNX raises an exception and aborts the operation (except in [TemplateOverrides](#TemplateOverrides). If you have a requirement where you need to verify the output to be null use __Unsafe__ versions prefix functions as below:
+  * If the resultant JQ query provides a __None__/__null__ response, CFNX raises an exception and aborts the operation (except in [TemplateOverrides](#TemplateOverrides). If you have a requirement where you need to verify the output to be null use __Unsafe__ versions prefix functions as below:
 
-  - __Resp::__.ResponseMetadata.InvalidProperty -> __RespUnsafe::__.ResponseMetadata.InvalidProperty
-  - __WaitResp::__.ResponseMetadata.InvalidProperty -> __WaitRespUnsafe::__.ResponseMetadata.InvalidProperty
+    - __Resp::__.ResponseMetadata.InvalidProperty -> __RespUnsafe::__.ResponseMetadata.InvalidProperty
+    - __WaitResp::__.ResponseMetadata.InvalidProperty -> __WaitRespUnsafe::__.ResponseMetadata.InvalidProperty
 
-* If the specified property or intrinsic function expects you to provide a JQ, and if the JQ is missing an initial __'.'__ character, CFNX automatically prepends it, making the queries more readable in some scenarios.
+  * If the specified property or intrinsic function expects you to provide a JQ, and if the JQ is missing an initial __'.'__ character, CFNX automatically prepends it, making the queries more readable in some scenarios.
 
 <a name="WorkingWithIOStores"></a>
 ## Working with IO Stores
@@ -3419,8 +3402,8 @@ CFNX lets you download data from 4 different types of Stores, __S3__, __Boto3__,
 
 ```YAML
 S3InputStores:
-Stores:
-  MyStore: s3://mybucket/file.json
+  Stores:
+    MyStore: s3://mybucket/file.json
 ```
 
 All the input store types have __Global__ equivalents which follow the same syntax. The only difference between __Global__ and non Global is that Global is declared at __CFNXConfiguration__ level and is accessed via __Global*Store__ functions, where non Global Input stores are defined at individual Resource level and accessed using __*Store__ intrinsic functions. Refer [GlobalS3InputStores](#GlobalS3InputStores), [GlobalBoto3InputStores](#GlobalBoto3InputStores), [GlobalHTTPInputStores](#GlobalHTTPInputStores), [GlobalScriptInputStores](#GlobalScriptInputStores)
@@ -3430,20 +3413,20 @@ All the input store types have __Global__ equivalents which follow the same synt
 ---
 ```YAML
 S3InputStores:
-Stores:
-  MyStore1: s3://mybucket/file1.json
-  MyStore2: s3://mybucket/file2.json
-AssumeRoleConfig: # Optional
-  RoleArn: <priviliged-or-cross-account-role>
+  Stores:
+    MyStore1: s3://mybucket/file1.json
+    MyStore2: s3://mybucket/file2.json
+  AssumeRoleConfig: # Optional
+    RoleArn: <priviliged-or-cross-account-role>
 ```
 
 Once the JSON data is downloaded from S3 locations, you can query the data from them using __FnX::S3Store__ function which accepts [JQ](#UsingJQ) queries. The queries should prefix the store name they are being queried from.
 
 ```YAML
 MyResource:
-Properties:
-  MyProperty:
-    FnX::S3Store: .MyStore1.mydata.config.key
+  Properties:
+    MyProperty:
+      FnX::S3Store: .MyStore1.mydata.config.key
 ```
 
 <a name="Boto3InputStores"></a>
@@ -3452,35 +3435,35 @@ Properties:
 
 Boto3 Input stores accept a list with two elements:
 
-* __Service/Api__: Eg: ec2/describe_instances
-* __Arguments__: (Optional) Eg: {"StackName": "mystack"}
+  * __Service/Api__: Eg: ec2/describe_instances
+  * __Arguments__: (Optional) Eg: {"StackName": "mystack"}
 
 ```YAML
 Boto3InputStores:
-Stores:
-  Store1: ['ec2/describe_instances']
-  Store2: ['cloudformation/describe_stacks', {'StackName': 'mystack'}]
+  Stores:
+    Store1: ['ec2/describe_instances']
+    Store2: ['cloudformation/describe_stacks', {'StackName': 'mystack'}]
 ```
 
 Similar to S3, Boto3 also accepts __AssumeRoleConfig__
 
 ```YAML
 Boto3InputStores:
-Stores:
-  Store1: ['cloudformation/describe_stacks', {'StackName': 'cross-account'}]
-AssumeRoleConfig:
-  RoleArn: <priviliged-role-arn>
+  Stores:
+    Store1: ['cloudformation/describe_stacks', {'StackName': 'cross-account'}]
+  AssumeRoleConfig:
+    RoleArn: <priviliged-role-arn>
 ```
 
 Once the data is downloaded into the stores, you can access them using __FnX::Boto3Store__ function by passing [JQ](#UsingJQ) queries. The queries should prefix the store name they are being queried from.
 
 ```YAML
 MyResource:
-Properties:
-  MyProperty:
-    FnX::Boto3Store: .Store1.ResponseMetadata.HTTPStatusCode
-  MyProperty:
-    FnX::Boto3Store: .Store1.Stacks[0].StackId
+  Properties:
+    MyProperty:
+      FnX::Boto3Store: .Store1.ResponseMetadata.HTTPStatusCode
+    MyProperty:
+      FnX::Boto3Store: .Store1.Stacks[0].StackId
 ```
 
 <a name="HTTPInputStores"></a>
@@ -3490,51 +3473,51 @@ We can provide a simple url, a http method and url, a http method url and data t
 
 ```json
 {
-"STATUS": "<http_status_code>",
-"RESPONSE": "<json loaded object if possible else string>"
+  "STATUS": "<http_status_code>",
+  "RESPONSE": "<json loaded object if possible else string>"
 }
 ```
 
 ```YAML
 HTTPInputStores:
-Stores:
-  JenkinsStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-status-provider.json
+  Stores:
+    JenkinsStore: https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/jenkins-status-provider.json
 ```
 ```YAML
 Resources:
-MyResource:
-  Properties:
-    Status:
-      FnX::GlobalHTTPStore: .JenkinsStore
+  MyResource:
+    Properties:
+      Status:
+        FnX::GlobalHTTPStore: .JenkinsStore
 ```
 
 - Using __POST__ requests
 ```YAML
 HTTPInputStores:
-Stores:
-  JenkinsStore:
-    - POST
-    - <url>
+  Stores:
+    JenkinsStore:
+      - POST
+      - <url>
 ```
 
 - Using __POST__ with __DATA__
 ```YAML
 HTTPInputStores:
-Stores:
-  JenkinsStore:
-    - POST
-    - <url>
-    - {'username': 'Bob'}
+  Stores:
+    JenkinsStore:
+      - POST
+      - <url>
+      - {'username': 'Bob'}
 ```
 
 - Using __GET__ with query __PARAMS__
 ```YAML
 HTTPInputStores:
-Stores:
-  JenkinsStore:
-    - GET
-    - <url>
-    - {'username': 'Bob'}   --> will be translated to query params ?username=Bob
+  Stores:
+    JenkinsStore:
+      - GET
+      - <url>
+      - {'username': 'Bob'}   --> will be translated to query params ?username=Bob
 ```
 
 <a name="ScriptInputStores"></a>
@@ -3545,8 +3528,8 @@ The output of script stores is accessible in the below object format:
 
 ```json
 {
-"EXIT_CODE": "<exit_code>",
-"OUTPUT": "<json loaded object if possible else string>"
+  "EXIT_CODE": "<exit_code>",
+  "OUTPUT": "<json loaded object if possible else string>"
 }
 ```
 
@@ -3562,30 +3545,30 @@ cmd() - access to run shell commands
 
 ```YAML
 ScriptInputStores:
-Stores:
-  CustomStore: |
-    return len($[PARAM::AvailabilityZones]) * 2
+  Stores:
+    CustomStore: |
+      return len($[PARAM::AvailabilityZones]) * 2
 ```
 
 ```YAML
 Resources:
-MyAutoScalingGroup:
-  Type: AWS::AutoScaling::AutoScalingGroup
-  Properties:
-    MinSize:
-      FnX::GlobalScriptStore: .CustomStore.OUTPUT
+  MyAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      MinSize:
+        FnX::GlobalScriptStore: .CustomStore.OUTPUT
 ```
 
 Using __AssumeRoleConfig__. With AssumeRoleConfig we use boto3_session which is pre baked session with Assume role credentials. For normal access you could still import boto3 and make simple boto3 calls.
 
 ```YAML
 ScriptInputStores:
-Stores:
-  CustomStore: |
-    # boto3_session uses assume role config
-    return boto3_session.client('cloudformation').describe_stacks()
-AssumeRoleConfig:
-  RoleArn: <cross-account-or-privileged-role-arn>
+  Stores:
+    CustomStore: |
+      # boto3_session uses assume role config
+      return boto3_session.client('cloudformation').describe_stacks()
+  AssumeRoleConfig:
+    RoleArn: <cross-account-or-privileged-role-arn>
 ```
 
 <a name="OutputStore"></a>
@@ -3595,50 +3578,49 @@ Data from the resource execution or api calls can be saved into S3 using __Outpu
 
 ```YAML
 OutputStore:
-Location: s3://bucketname/outputfile.json
-JsonPath: abc/inside/jsonpath
-AssumeRoleConfig: # Optional
-  RoleArn: <priviliged-role-arn>
+  Location: s3://bucketname/outputfile.json
+  JsonPath: abc/inside/jsonpath
+  AssumeRoleConfig: # Optional
+    RoleArn: <priviliged-role-arn>
 ```
 
 All the objects configured under __S3Outputs__ section is saved into the S3Store:
 
 ```YAML
 OutputStore:
-Location: s3://bucketname/outputfile.json
-JsonPath: abc/inside/jsonpath
+  Location: s3://bucketname/outputfile.json
+  JsonPath: abc/inside/jsonpath
 S3Outputs:
-Key: Value
-ComplexKey:
-  NestedArray: [1,2,3]
-  NestedDict:
-    Key: Value
+  Key: Value
+  ComplexKey:
+    NestedArray: [1,2,3]
+    NestedDict:
+      Key: Value
 ```
 
 With the above configuration a file named __outputfile.json__ is saved into __bucketname__ with below contents:
 
 ```JSON
 {
-"abc": {
-    "inside": {
-      "jsonpath": {
-        "S3Outputs": {
-          "Key": "Value",
-          "ComplexKey": {
-            "NestedArray": [1,2,3],
-            "NestedDict": {
-              "Key": "Value"
+  "abc": {
+      "inside": {
+        "jsonpath": {
+          "S3Outputs": {
+            "Key": "Value",
+            "ComplexKey": {
+              "NestedArray": [1,2,3],
+              "NestedDict": {
+                "Key": "Value"
+              }
             }
           }
         }
       }
-    }
-}
+  }
 }
 ```
 You can then download this data into other stacks using __S3InputStores__ or __GlobalS3InputStores__ and use values from them.
 
-<a name="UsingVPCConfiguration"></a>
 ## Using VPC Configuration
 
 You can configure the lambda function deployed as part of this solution to use VPC configuration if you would like to use internal service endpoints while making HTTP api calls.
@@ -3656,5 +3638,3 @@ Please refer to https://docs.aws.amazon.com/lambda/latest/dg/vpc.html and https:
 
 1) __Ref__ may not always point to Parameters, as it may reference LogicalResourceIds as well.
 2) Even though CFNX can parse all __Ref__ intrinsic functions and use templateParameterValues to resolve them, it is not appropriate to intrude with cloudformation processing as there could be other transforms dependent on __Ref__ values like Serverless (SAM).
-
-Being said that you can use Ref and GetAtt in Resource level properties, but not at Template Processing
