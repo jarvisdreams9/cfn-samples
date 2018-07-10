@@ -99,7 +99,7 @@ Above command will setup:
 
 **SECURITY**:
 ---
-By default the setup deploys the lambda execution role with AdministratorAccess. If you wish to work with only a few features, limit the access in __crh-serverless.yml__ in source code and __cfnxmd deploy-cfnx__. CFNX provides options to work with all AWS services using boto3 and also allows you to configure Assume Role configs.
+By default the setup deploys the lambda execution role with __AdministratorAccess__. If you wish to work with only a few features, limit the access in __crh-serverless.yml__ in source code and run ```cfnxmd deploy-cfnx```. CFNX provides options to work with all AWS services using boto3 and also allows you to configure Assume Role configs.
 
 If you have to setup VPC access to work with internal endpoints, refer to [VPC](#UsingVPCConfiguration)
 
@@ -300,7 +300,7 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/basic_sample
 ```
 ##### Special Macros
 
-- $[MACRO::SHASUM] - Provides first 10 characters of SHA256 of the string prefix
+- __$[MACRO::SHASUM]__ - Provides first 10 characters of SHA256 of the string prefix
 
 ```YAML
 string-to-create-shasum-from-$[MACRO::SHASUM]
@@ -317,16 +317,16 @@ BucketName: my-bucket-8d4379b9ee
 
 ##### String Macros
 
-- $[MACRO::RandomUUID]      - Returns random UUID (20f3d750-9291-4f0e-9da5-57bcbedc4aea)
-- $[MACRO::RandomShortUUID] - Returns first 8 characters of random UUID (20f3d750)
-- $[MACRO::StackUrl]        - Returns the URL for the stack to view from console
-- $[MACRO::Region]          - Returns the region name
-- $[MACRO::StackId]         - Returns the stack id
-- $[MACRO::StackName]       - Returns the Name of the stack
-- $[MACRO::AccountId]       - Returns the Account ID
-- $[MACRO::RequestId]       - Returns the RequestId. Use this if you need unique value per stack deployment
-- $[MACRO::DateTime]        - Current UTC time in string ISO format
-- $[MACRO::StackStatus]     - Provides stack status. More appropriate usage of this would be while configuring runtime [Success](#CFNXSuccessActions) [Failure](#CFNXFailureActions) actions per resource
+- __$[MACRO::RandomUUID]__      - Returns random UUID (20f3d750-9291-4f0e-9da5-57bcbedc4aea)
+- __$[MACRO::RandomShortUUID]__ - Returns first 8 characters of random UUID (20f3d750)
+- __$[MACRO::StackUrl]__        - Returns the URL for the stack to view from console
+- __$[MACRO::Region]__          - Returns the region name
+- __$[MACRO::StackId]__         - Returns the stack id
+- __$[MACRO::StackName]__       - Returns the Name of the stack
+- __$[MACRO::AccountId]__       - Returns the Account ID
+- __$[MACRO::RequestId]__       - Returns the RequestId. Use this if you need unique value per stack deployment
+- __$[MACRO::DateTime]__        - Current UTC time in string ISO format
+- __$[MACRO::StackStatus]__     - Provides stack status. More appropriate usage of this would be while configuring runtime [Success](#CFNXSuccessActions) [Failure](#CFNXFailureActions) actions per resource
 
 ##### Number Macros
 
@@ -343,10 +343,10 @@ ValueAsNumber: $[MACRO::EpochSeconds]
 ValueAsNumber: 1531068943
 ```
 
-- $[MACRO::EpochSeconds]       - Returns current epoch seconds
-- $[MACRO::RandomInteger]      - Returns a random integer between 1 - 32000
-- $[MACRO::RandomBigInteger]   - Returns a random integer greater than 10^9
-- $[MACRO::RandomShortInteger] - Returns a random integer between 1 - 127
+- __$[MACRO::EpochSeconds]__       - Returns current epoch seconds
+- __$[MACRO::RandomInteger]__      - Returns a random integer between 1 - 32000
+- __$[MACRO::RandomBigInteger]__   - Returns a random integer greater than 10^9
+- __$[MACRO::RandomShortInteger]__ - Returns a random integer between 1 - 127
 [docs/samples/transform/funcs_macros/macros_basic.yaml](/docs/samples/transform/funcs_macros/macros_basic.yaml)
 ```
 bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/macros_basic.yaml
@@ -520,7 +520,7 @@ return range(1, 10)
 [1,2,3,4,5,6,7,8,9]
 ```
 
-__Note__: Timeout for FnX::Python code execution is __30 seconds__
+__Note__: __Timeout for the FnX::Python__ code execution is __30 seconds__
 
 * __cmd__ is a pre baked function to run any arbitrary linux commands. The output of the command contains 3 values: ```[exit_code, output, error]```.
 
@@ -581,11 +581,7 @@ bash cfnxcmd transform-local -t docs/samples/transform/funcs_macros/python_funct
 
 - __FnX::GetParam__: Query Parameters passed to to the template. This intrinsic function also supports macro usage __$[PARAM::ParameterName]__
 
-<a name="WhyNotRef"></a>
-**Why can't I use Ref instead?**: Cloudformation does not process or resolve __Ref__ or other CFN intrinsic functions before transform processing. Below are the reasons
-
-1) __Ref__ may not always point to Parameters, as it may reference LogicalResourceIds as well.
-2) Even though CFNX can parse all __Ref__ intrinsic functions and use templateParameterValues to resolve them, it is not appropriate to intrude with cloudformation processing as there could be other transforms dependent on __Ref__ values like Serverless (SAM).
+[Why Can't I use Ref Instead?](#WhyNotRef)
 
 **You cannot access protected values using this function**
 
@@ -780,6 +776,7 @@ Input Stores support downloding data from __S3, boto3, HTTP, Custom Python Scrip
 All Input Stores allow you to define a __StoreIdentifier__ under which you download the data. This allows you to define multiple input stores of different types.
 
 _NOTE: All input store data providers should return a valid JSON or a YAML string_
+
 _NOTE: Intrinsic functions and macros can be used to define input store configurations_
 
 <a name="GlobalS3InputStores"></a>
@@ -1811,7 +1808,7 @@ You can run the above "deploy" command multiple times with no changes to templat
 
 Cloudformation supports [stack creation timeout](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html#Timeout). However, if you want to set timeouts on Stack Updates, you can configure this:
 
-**Max Timeout allowed is 3500 seconds**
+**Max Timeout allowed is 2500 seconds**
 
 ```YAML
 Transform: [CFNX]
@@ -1848,6 +1845,8 @@ __How this works__
 ---
 CFNX groups resources of same type (AWS::S3, AWS::IAM, Custom::) and batches them into multiple groups based on __MaxConcurrency__.
 
+**ConcurrencyControl calculates the final dependencies based on already existing dependencies**
+
 - Say __Group1__ has 5 resources IAMR1, IAMR2, IAMR3, IAMR4, IAMR5.
 - All resources in __Group2__ are made dependent on one of the randomly selected __Group1__ resources, say __R3__. To make __Group2__ dependent on all IAMR1-IAMR5 resources, use __StrictConcurrency: true__ in configuration (see below). However, it is not recommended to use strict concurrency when you have huge number of resources in the template as it increases the total execution time by considerable amount.
 - Once __R3__ finished execution, __Group2__ starts execution
@@ -1855,6 +1854,8 @@ CFNX groups resources of same type (AWS::S3, AWS::IAM, Custom::) and batches the
 - __Group3__ (if exists) is similarly configured to be dependent on __Group2__
 
 _Note: ConcurrencyControl only limits the maximum concurrency and does not ensure minimum concurrency of any value_
+
+**When using CLI to run transforms you are provided with an option to print the execution order post dependency processing for you to verify**
 
 [docs/samples/transform/cfnx_configuration/concurrency-control.yaml](/docs/samples/transform/cfnx_configuration/concurrency-control.yaml)
 ```
@@ -1945,7 +1946,7 @@ Resource level properties add custom resources to the template which gets execut
 <a name="CFNXTimeout"></a>
 ## Resource Timeouts
 
-You can configure create/update timeouts on a per resource basis using __CFNXTimeout__. Maximum allowed timeout is 3500 seconds.
+You can configure create/update timeouts on a per resource basis using __CFNXTimeout__. Maximum allowed timeout is 2500 seconds.
 
 ```YAML
 Transform: [CFNX]
@@ -2060,6 +2061,13 @@ CFNXOutputAttributes: ['Arn', 'Ref'] # only few attributes
 Type: AWS::S3::Bucket
 ```
 
+[docs/samples/transform/resource_properties/output-attributes.yaml](/docs/samples/transform/resource_properties/output-attributes.yaml)
+```
+bash cfnxcmd transform-local -t docs/samples/transform/resource_properties/output-attributes.yaml
+
+aws cloudformation deploy --template-file docs/samples/transform/resource_properties/output-attributes.yaml --stack-name output-attributes-yaml-1
+```
+
 <a name="CFNXEnsureLatency"></a>
 ## Ensure HTTP Latency
 
@@ -2080,7 +2088,7 @@ Other Configurable options are:
 __NumOfConsecutiveResults__: (Default: 30) Number of consecutive attempts that should result in desired latency
 __NumOfSuccessConsecutiveResults__: (Default: 30) number of success consecutive results
 __NumOfFailureConsecutiveResults__: (Default: 30) number of failure consecutive results
-__TotalTimeout__: (Default: 900) Max configurable timeout is 3500 seconds
+__TotalTimeout__: (Default: 900) Max configurable timeout is 2500 seconds
 
 [docs/samples/transform/resource_properties/ensure-latency.yaml](/docs/samples/transform/resource_properties/ensure-latency.yaml)
 ```
@@ -3642,3 +3650,9 @@ bash cfnxcmd deploy-cfnx --parameter-overrides EnableVpcConfig=Yes VpcSecurityGr
 ```
 
 Please refer to https://docs.aws.amazon.com/lambda/latest/dg/vpc.html and https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-lambda-function-vpcconfig.html for more details.
+
+<a name="WhyNotRef"></a>
+**Why can't I use Ref instead?**: Cloudformation does not process or resolve __Ref__ or other CFN intrinsic functions before transform processing. Below are the reasons
+
+1) __Ref__ may not always point to Parameters, as it may reference LogicalResourceIds as well.
+2) Even though CFNX can parse all __Ref__ intrinsic functions and use templateParameterValues to resolve them, it is not appropriate to intrude with cloudformation processing as there could be other transforms dependent on __Ref__ values like Serverless (SAM).
