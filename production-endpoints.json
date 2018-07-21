@@ -1,4 +1,4 @@
 {
-  "BusinessEndpoint": "https://github.com/jarvisdreams9/cfn-samples/blob/master/ping",
-  "DevEndpoint": "https://github.com/jarvisdreams9/cfn-samples/blob/master/ping"
+  "BusinessEndpoint": "https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/ping",
+  "DevEndpoint": "https://raw.githubusercontent.com/jarvisdreams9/cfn-samples/master/ping"
 }
