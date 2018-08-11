@@ -1,0 +1,8 @@
+files:
+  /opt/elasticbeanstalk/hooks/appdeploy/pre/00_set_tmp_permissions.sh:
+    content: |-
+        #!/usr/bin/env bash
+        chown -R ec2-user /tmp
+    group: root
+    mode: "000755"
+    owner: root
